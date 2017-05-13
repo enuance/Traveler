@@ -13,6 +13,10 @@
 		200C7DE01EC52A3D008C42C4 /* Traveler.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DDE1EC52A3D008C42C4 /* Traveler.xcdatamodeld */; };
 		200C7DE21EC52A3D008C42C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 200C7DE11EC52A3D008C42C4 /* Assets.xcassets */; };
 		200C7DE51EC52A3D008C42C4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 200C7DE31EC52A3D008C42C4 /* LaunchScreen.storyboard */; };
+		200C7DED1EC53078008C42C4 /* flickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DEC1EC53078008C42C4 /* flickrClient.swift */; };
+		200C7DF31EC531AB008C42C4 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DF21EC531AB008C42C4 /* Constants.swift */; };
+		206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206135711EC697B20071FF17 /* ErrorHandling.swift */; };
+		20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +28,10 @@
 		200C7DE11EC52A3D008C42C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		200C7DE41EC52A3D008C42C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		200C7DE61EC52A3D008C42C4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200C7DEC1EC53078008C42C4 /* flickrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = flickrClient.swift; sourceTree = "<group>"; };
+		200C7DF21EC531AB008C42C4 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		206135711EC697B20071FF17 /* ErrorHandling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorHandling.swift; sourceTree = "<group>"; };
+		20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelerSingleton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +64,51 @@
 		200C7DD61EC52A3D008C42C4 /* Traveler */ = {
 			isa = PBXGroup;
 			children = (
-				200C7DD71EC52A3D008C42C4 /* AppDelegate.swift */,
-				200C7DD91EC52A3D008C42C4 /* ViewController.swift */,
-				200C7DDB1EC52A3D008C42C4 /* Main.storyboard */,
-				200C7DE11EC52A3D008C42C4 /* Assets.xcassets */,
-				200C7DE31EC52A3D008C42C4 /* LaunchScreen.storyboard */,
-				200C7DE61EC52A3D008C42C4 /* Info.plist */,
-				200C7DDE1EC52A3D008C42C4 /* Traveler.xcdatamodeld */,
+				200C7DEE1EC530B0008C42C4 /* Model */,
+				200C7DF01EC53118008C42C4 /* Controller */,
+				200C7DF11EC5312D008C42C4 /* View */,
+				200C7DEF1EC530F0008C42C4 /* Supporting */,
 			);
 			path = Traveler;
+			sourceTree = "<group>";
+		};
+		200C7DEE1EC530B0008C42C4 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				206135711EC697B20071FF17 /* ErrorHandling.swift */,
+				200C7DDE1EC52A3D008C42C4 /* Traveler.xcdatamodeld */,
+				200C7DEC1EC53078008C42C4 /* flickrClient.swift */,
+				200C7DF21EC531AB008C42C4 /* Constants.swift */,
+				20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		200C7DEF1EC530F0008C42C4 /* Supporting */ = {
+			isa = PBXGroup;
+			children = (
+				200C7DDB1EC52A3D008C42C4 /* Main.storyboard */,
+				200C7DE31EC52A3D008C42C4 /* LaunchScreen.storyboard */,
+				200C7DE11EC52A3D008C42C4 /* Assets.xcassets */,
+				200C7DE61EC52A3D008C42C4 /* Info.plist */,
+				200C7DD71EC52A3D008C42C4 /* AppDelegate.swift */,
+			);
+			name = Supporting;
+			sourceTree = "<group>";
+		};
+		200C7DF01EC53118008C42C4 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				200C7DD91EC52A3D008C42C4 /* ViewController.swift */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
+		200C7DF11EC5312D008C42C4 /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = View;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,9 +184,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */,
+				200C7DF31EC531AB008C42C4 /* Constants.swift in Sources */,
+				206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */,
 				200C7DDA1EC52A3D008C42C4 /* ViewController.swift in Sources */,
 				200C7DD81EC52A3D008C42C4 /* AppDelegate.swift in Sources */,
 				200C7DE01EC52A3D008C42C4 /* Traveler.xcdatamodeld in Sources */,
+				200C7DED1EC53078008C42C4 /* flickrClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -306,6 +354,7 @@
 				200C7DEB1EC52A3D008C42C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
