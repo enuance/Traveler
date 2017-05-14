@@ -44,7 +44,19 @@ enum NetworkError: LocalizedError{
         case .invalidPutData(domain: let method, data: let description):
             return "The invalid data: \(description) was rejected from \(method)"
         case .invalidDeleteData(domain: let method, data: let description):
-            return "The invalid data: \(description) was rejected from \(method)"        }
+            return "The invalid data: \(description) was rejected from \(method)"
+        }
+    }
+}
+
+enum DatabaseError: LocalizedError{
+    case general
+    
+    var localizedDescription: String{
+        switch self{
+        case .general:
+            return "The task could not be completed due to a DataBase Error"
+        }
     }
 }
 
@@ -64,16 +76,16 @@ enum GeneralError: String{
 
 
 //Allows a way to propogate Error Messages to the User throughout the app
-/*
+
 class SendToDisplay{
     class func error(_ displayer: UIViewController, errorType: String, errorMessage: String, assignment: (() -> Void)?) {
-        let errorColor = OTMColor().teal
+        let errorColor = TravelerCnst.color.gold
         let errorTypeString = NSAttributedString(string: errorType, attributes: [
-            NSFontAttributeName : UIFont(name: "Avenir Next Medium", size: CGFloat(16))!,
-            NSForegroundColorAttributeName : errorColor])
+            NSFontAttributeName : UIFont(name: "Futura-Medium", size: CGFloat(24))!,
+            NSForegroundColorAttributeName : TravelerCnst.color.teal])
         let messageString = NSAttributedString(string: errorMessage, attributes: [
-            NSFontAttributeName : UIFont(name: "Avenir Next", size: CGFloat(12))!,
-            NSForegroundColorAttributeName : UIColor.darkGray])
+            NSFontAttributeName : UIFont(name: "AvenirNextCondensed-Regular", size: CGFloat(20))!,
+            NSForegroundColorAttributeName : TravelerCnst.color.teal])
         let errorAlert = UIAlertController(title: errorType, message: errorMessage, preferredStyle: .alert)
         errorAlert.setValue(errorTypeString, forKey: "attributedTitle")
         errorAlert.setValue(messageString, forKey: "attributedMessage")
@@ -94,13 +106,13 @@ class SendToDisplay{
     //the assignements parameter accepts a dictionary and so the responses/Answers to the user is displayed in a random order each time the method
     //is called.
     class func question(_ displayer: UIViewController, QTitle: String, QMessage: String, assignments Answers: [String : () -> (Void)]){
-        let QAColor = OTMColor().teal
+        let QAColor = TravelerCnst.color.gold
         let QTitleString = NSAttributedString(string: QTitle, attributes: [
-            NSFontAttributeName : UIFont(name: "Avenir Next Medium", size: CGFloat(16))!,
-            NSForegroundColorAttributeName : QAColor])
+            NSFontAttributeName : UIFont(name: "Futura-Medium", size: CGFloat(24))!,
+            NSForegroundColorAttributeName : TravelerCnst.color.teal])
         let messageString = NSAttributedString(string: QMessage, attributes: [
-            NSFontAttributeName : UIFont(name: "Avenir Next", size: CGFloat(12))!,
-            NSForegroundColorAttributeName : OTMColor().gray])
+            NSFontAttributeName : UIFont(name: "AvenirNextCondensed-Regular", size: CGFloat(20))!,
+            NSForegroundColorAttributeName : TravelerCnst.color.teal])
         let questionAlert = UIAlertController(title: QTitle, message: QMessage, preferredStyle: .alert)
         questionAlert.setValue(QTitleString, forKey: "attributedTitle")
         questionAlert.setValue(messageString, forKey: "attributedMessage")
@@ -118,4 +130,4 @@ class SendToDisplay{
         displayer.present(questionAlert, animated: true, completion: nil)
     }
 }
-*/
+

@@ -6,7 +6,7 @@
 //  Copyright © 2017 Stephen Martinez. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 struct FlickrCnst {
     struct API {
@@ -45,7 +45,6 @@ struct FlickrCnst {
         static let Miles = "mi"
         static let PhotosOnly = "1"
         static func extrasList(_ extras: String...)-> String{return extras.joined(separator: ",")}
-        
         private init (){}
     }
     
@@ -113,14 +112,15 @@ struct FlickrCnst {
     private init (){}
 }
 
-struct GlobalCnst {
-    
+struct TravelerCnst {
+    //Use this method to create a random page number
     static func pageNoRand(_ pages: Int) -> Int{
         let firstTry = pages == 0 ? 0 : Int(arc4random_uniform(UInt32(pages))) + 1
         let Second = pages == 0 ? 0 : Int(arc4random_uniform(UInt32(pages))) + 1
         return min(firstTry, Second)
     }
     
+    //Use this method to create a list of random indexing integers
     static func indexListRand(_ countOfList: Int, _ maxResults: Int) -> [Int]{
         guard (countOfList != 0), (maxResults != 0) else{return [Int]()}
         let variableMaxResult = min(maxResults, countOfList)
@@ -133,6 +133,36 @@ struct GlobalCnst {
             indexList.append(indexToEnter)
         }
         return indexList
+    }
+    
+    //Use This Method when sending Data to a server
+    static func convertToJSON(with object: AnyObject) -> (JSONObject: Data?, error: NetworkError?){
+        var wouldBeJSON: Data? = nil
+        do{ wouldBeJSON = try JSONSerialization.data(withJSONObject: object, options: .prettyPrinted)}
+        catch{return (wouldBeJSON, NetworkError.JSONToData)}
+        return (wouldBeJSON, nil)
+    }
+    
+    //Use this Method when recieving Data from a server
+    static func convertToSwift(with JSON: Data) -> (swiftObject: AnyObject?, error: NetworkError?){
+        var wouldBeSwift: AnyObject? = nil
+        do{ wouldBeSwift = try JSONSerialization.jsonObject(with: JSON, options: .allowFragments) as AnyObject}
+        catch{return (wouldBeSwift, NetworkError.DataToJSON)}
+        return (wouldBeSwift, nil)
+    }
+    
+    //Colors for use in accordance with the App's theme.
+    static let color = Color()
+    struct Color{
+        var teal: UIColor{get{return UIColor(red: decimal(50), green: decimal(110), blue: decimal(117), alpha: 1)}}
+        var lightTeal: UIColor{get{return UIColor(red: decimal(80), green: decimal(176), blue: decimal(187), alpha: 1)}}
+        var gold: UIColor{get{return UIColor(red: decimal(176), green: decimal(142), blue: decimal(101), alpha: 1)}}
+        var brownGold: UIColor{get{return UIColor(red: decimal(75), green: decimal(66), blue: decimal(56), alpha: 1)}}
+        var white: UIColor{get{return UIColor(red: decimal(255), green: decimal(255), blue: decimal(255), alpha: 1)}}
+        var mutedWhite: UIColor{get{return UIColor(red: decimal(185), green: decimal(185), blue: decimal(185), alpha: 1)}}
+        var lightGray: UIColor{get{return UIColor(red: decimal(39), green: decimal(47), blue: decimal(51), alpha: 0.8)}}
+        var gray: UIColor{get{return UIColor.darkGray}}
+        private func decimal(_ rgbValue: Int) -> CGFloat{return CGFloat(rgbValue)/CGFloat(255)}
     }
     
 }

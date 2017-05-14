@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		200C7DD81EC52A3D008C42C4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DD71EC52A3D008C42C4 /* AppDelegate.swift */; };
-		200C7DDA1EC52A3D008C42C4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DD91EC52A3D008C42C4 /* ViewController.swift */; };
 		200C7DDD1EC52A3D008C42C4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 200C7DDB1EC52A3D008C42C4 /* Main.storyboard */; };
 		200C7DE01EC52A3D008C42C4 /* Traveler.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DDE1EC52A3D008C42C4 /* Traveler.xcdatamodeld */; };
 		200C7DE21EC52A3D008C42C4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 200C7DE11EC52A3D008C42C4 /* Assets.xcassets */; };
@@ -16,13 +15,13 @@
 		200C7DED1EC53078008C42C4 /* flickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DEC1EC53078008C42C4 /* flickrClient.swift */; };
 		200C7DF31EC531AB008C42C4 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7DF21EC531AB008C42C4 /* Constants.swift */; };
 		206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206135711EC697B20071FF17 /* ErrorHandling.swift */; };
+		20BE4B5A1EC7DB9800EA57B0 /* TravelMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */; };
 		20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		200C7DD41EC52A3D008C42C4 /* Traveler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Traveler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		200C7DD71EC52A3D008C42C4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		200C7DD91EC52A3D008C42C4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		200C7DDC1EC52A3D008C42C4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		200C7DDF1EC52A3D008C42C4 /* Traveler.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Traveler.xcdatamodel; sourceTree = "<group>"; };
 		200C7DE11EC52A3D008C42C4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -31,6 +30,7 @@
 		200C7DEC1EC53078008C42C4 /* flickrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = flickrClient.swift; sourceTree = "<group>"; };
 		200C7DF21EC531AB008C42C4 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		206135711EC697B20071FF17 /* ErrorHandling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorHandling.swift; sourceTree = "<group>"; };
+		20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelMapViewController.swift; sourceTree = "<group>"; };
 		20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelerSingleton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -99,7 +99,7 @@
 		200C7DF01EC53118008C42C4 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				200C7DD91EC52A3D008C42C4 /* ViewController.swift */,
+				20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -187,10 +187,10 @@
 				20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */,
 				200C7DF31EC531AB008C42C4 /* Constants.swift in Sources */,
 				206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */,
-				200C7DDA1EC52A3D008C42C4 /* ViewController.swift in Sources */,
 				200C7DD81EC52A3D008C42C4 /* AppDelegate.swift in Sources */,
 				200C7DE01EC52A3D008C42C4 /* Traveler.xcdatamodeld in Sources */,
 				200C7DED1EC53078008C42C4 /* flickrClient.swift in Sources */,
+				20BE4B5A1EC7DB9800EA57B0 /* TravelMapViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
