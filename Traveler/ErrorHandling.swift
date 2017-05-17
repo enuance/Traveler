@@ -50,12 +50,15 @@ enum NetworkError: LocalizedError{
 }
 
 enum DatabaseError: LocalizedError{
-    case general
+    case general(dbDescription: String)
+    case nonUniqueEntry
     
     var localizedDescription: String{
         switch self{
-        case .general:
-            return "The task could not be completed due to a DataBase Error"
+        case .general(dbDescription: let description):
+            return "DataBase Error\(description)"
+        case .nonUniqueEntry:
+            return "You attempted to enter a non unique entry into the DataBase. Please set the unique Identifier"
         }
     }
 }

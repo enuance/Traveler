@@ -4,14 +4,16 @@
         <attribute name="fullSize" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <attribute name="thumbnail" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <attribute name="uniqueID" attributeType="String" syncable="YES"/>
+        <relationship name="myLocation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="albumPhotos" inverseEntity="Pin" syncable="YES"/>
     </entity>
     <entity name="Pin" representedClassName="Pin" syncable="YES" codeGenerationType="class">
         <attribute name="latitude" attributeType="Double" minValueString="-90" maxValueString="90" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="longitude" attributeType="Double" minValueString="-180" maxValueString="180" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="uniqueID" attributeType="String" syncable="YES"/>
+        <relationship name="albumPhotos" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Photo" inverseName="myLocation" inverseEntity="Photo" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Photo" positionX="-63" positionY="-18" width="128" height="90"/>
-        <element name="Pin" positionX="-54" positionY="18" width="128" height="90"/>
+        <element name="Photo" positionX="-63" positionY="-18" width="128" height="103"/>
+        <element name="Pin" positionX="-326" positionY="-18" width="128" height="103"/>
     </elements>
 </model>
