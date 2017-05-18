@@ -9,7 +9,10 @@
 import UIKit
 
 class AlbumViewController: UIViewController {
-
+    
+    
+    var pinUniqueID: String!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 

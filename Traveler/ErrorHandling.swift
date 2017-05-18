@@ -52,6 +52,7 @@ enum NetworkError: LocalizedError{
 enum DatabaseError: LocalizedError{
     case general(dbDescription: String)
     case nonUniqueEntry
+    case inconvertableObject(object: String)
     
     var localizedDescription: String{
         switch self{
@@ -59,6 +60,8 @@ enum DatabaseError: LocalizedError{
             return "DataBase Error\(description)"
         case .nonUniqueEntry:
             return "You attempted to enter a non unique entry into the DataBase. Please set the unique Identifier"
+        case .inconvertableObject(object: let objectDescription):
+            return "Unable to convert DataBase object to: \(objectDescription)"
         }
     }
 }

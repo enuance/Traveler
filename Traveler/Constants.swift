@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 
 struct FlickrCnst {
     struct API {
@@ -149,6 +150,12 @@ struct TravelerCnst {
         do{ wouldBeSwift = try JSONSerialization.jsonObject(with: JSON, options: .allowFragments) as AnyObject}
         catch{return (wouldBeSwift, NetworkError.DataToJSON)}
         return (wouldBeSwift, nil)
+    }
+    
+    static func convertToPinAnnotation(with DBPin: Pin) -> (pinAnnotation: PinAnnotation?, error: DatabaseError?){
+        let coordinates = CLLocationCoordinate2DMake(DBPin.latitude, DBPin.longitude)
+        guard let uniqueIdentifier = DBPin.uniqueID else{return (nil, DatabaseError.nonUniqueEntry)}
+        return (PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier), nil)
     }
     
     //Colors for use in accordance with the App's theme.

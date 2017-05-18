@@ -36,7 +36,14 @@ extension TravelMapViewController{
         }
     }
     
-    
+    func animateMessage(show: Bool){
+        switch show{
+        case true: UIView.animate(withDuration: 0.5, animations:
+        {success in self.leftMessage.alpha = 1; self.rightMessage.alpha = 1})
+        case false: UIView.animate(withDuration: 0.5, animations:
+        {success in self.leftMessage.alpha = 0; self.rightMessage.alpha = 0})
+        }
+    }
     
     
 }

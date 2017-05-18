@@ -14,14 +14,14 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var entryView: UIView!
     @IBOutlet weak var traveledPlacesView: UIView!
     @IBOutlet weak var mapView: MKMapView!
-    
-    
-    
-    
+    @IBOutlet weak var rightMessage: UILabel!
+    @IBOutlet weak var leftMessage: UILabel!
+    var deleteMode: Bool = false
     
     override func viewDidLoad() {super.viewDidLoad()
         UIApplication.shared.statusBarStyle = .lightContent
         setupTouchSenitivity()
+        addDataBasePins(to: mapView)
     }
 
 
@@ -41,6 +41,19 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         return pinView
     }
     
+    func addDataBasePins(to map: MKMapView){
+        let pins = Traveler.retrievePinsFromDataBase()
+        guard pins.error == nil else{
+            SendToDisplay.error(self,
+                                errorType: "DataBase Error",
+                                errorMessage: pins.error!.localizedDescription,
+                                assignment: nil);return
+        }
+        guard let pinsList = pins.pins else{print("No pins to add to map");return}
+        map.addAnnotations(pinsList)
+        print("Added Pins to Map")
+    }
+    
     func setupTouchSenitivity(){
         let touchSenitivity = UILongPressGestureRecognizer(target: self, action: #selector(addTravelerPin))
         touchSenitivity.minimumPressDuration = 0.8
@@ -49,7 +62,21 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        print("pin Selected")
+        guard let pinAnnotation = view.annotation as? PinAnnotation else{return}
+        let uniqueID = pinAnnotation.uniqueIdentifier!
+        print("pin \(uniqueID) Selected")
+        if deleteMode{
+            if let error = Traveler.deletePinFromDataBase(uniqueID: uniqueID){
+                SendToDisplay.error(self,
+                                    errorType: "DataBase Error",
+                                    errorMessage: error.localizedDescription,
+                                    assignment: nil)
+            };mapView.removeAnnotation(view.annotation!)
+            switchDeleteMode()
+        }else{
+            //segue to AlbumView with info
+            //from here
+        }
     }
     
     @IBAction func enterButton(_ sender: UIButton) {
@@ -72,26 +99,33 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         )
     }
     
-    
-    
     func addTravelerPin(gestureRecognizer: UIGestureRecognizer){
         guard gestureRecognizer.state == .ended else{return}
         let touch = gestureRecognizer.location(in: mapView)
         let selectedPoint = mapView.convert(touch, toCoordinateFrom: mapView)
         let uniqueID = UUID().uuidString
         let annotation = PinAnnotation(coordinate: selectedPoint, uniqueIdentifier: uniqueID)
-        Traveler.addToDatabase(annotation, completion: {
-            _ , error in
-            guard (error == nil) else{
-                SendToDisplay.error(self,
-                                    errorType: "DataBase Error",
-                                    errorMessage: error!.localizedDescription,
-                                    assignment: nil)
-                return}
-            mapView.addAnnotation(annotation)
-            print("pinAdded!")
-        })
+        if let error = Traveler.addToDatabase(annotation){
+            SendToDisplay.error(self,
+                                errorType: "DataBase Error",
+                                errorMessage: error.localizedDescription,
+                                assignment: nil)
+        }
+        mapView.addAnnotation(annotation)
+        print("pinAdded!")
     }
+    
+    @IBAction func editPins(_ sender: UIButton) {switchDeleteMode()}
+    
+    func switchDeleteMode(){
+        switch deleteMode{
+        case true: deleteMode = false; animateMessage(show: false)
+        case false: deleteMode = true ; animateMessage(show: true)
+        }
+    }
+    
+
+    
     
 }
 

@@ -51,14 +51,41 @@
                                                     <constraint firstAttribute="width" secondItem="hhF-cw-hgF" secondAttribute="height" multiplier="1:1" id="jAS-Ad-zdk"/>
                                                 </constraints>
                                                 <state key="normal" image="World Edit"/>
+                                                <connections>
+                                                    <action selector="editPins:" destination="BYZ-38-t0r" eventType="touchUpInside" id="LGi-Il-Qm4"/>
+                                                </connections>
                                             </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To Delete" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iHc-NH-KKT">
+                                                <rect key="frame" x="276" y="90" width="138" height="21"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="138" id="0x8-YB-aUc"/>
+                                                    <constraint firstAttribute="height" constant="21" id="lSQ-dk-aLa"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="AvenirNextCondensed-DemiBold" family="Avenir Next Condensed" pointSize="20"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select Pin" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yNN-IA-QSG">
+                                                <rect key="frame" x="0.0" y="90" width="138" height="21"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="21" id="71R-f3-pOp"/>
+                                                    <constraint firstAttribute="width" constant="138" id="Qjs-tH-Bdm"/>
+                                                </constraints>
+                                                <fontDescription key="fontDescription" name="AvenirNextCondensed-DemiBold" family="Avenir Next Condensed" pointSize="20"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                         </subviews>
                                         <constraints>
+                                            <constraint firstItem="yNN-IA-QSG" firstAttribute="top" secondItem="03D-XX-8td" secondAttribute="top" constant="20" id="02d-Uv-SwK"/>
                                             <constraint firstItem="03D-XX-8td" firstAttribute="top" secondItem="hhF-cw-hgF" secondAttribute="centerY" id="7tg-3H-XSq"/>
                                             <constraint firstItem="hhF-cw-hgF" firstAttribute="centerX" secondItem="pdQ-vm-Fs9" secondAttribute="centerX" id="Nsd-zl-NqY"/>
                                             <constraint firstAttribute="height" constant="133" id="PcL-FD-7fM"/>
+                                            <constraint firstItem="yNN-IA-QSG" firstAttribute="leading" secondItem="pdQ-vm-Fs9" secondAttribute="leading" id="QDw-6S-y9G"/>
                                             <constraint firstItem="hhF-cw-hgF" firstAttribute="top" secondItem="pdQ-vm-Fs9" secondAttribute="top" id="cGD-QD-SvB"/>
+                                            <constraint firstAttribute="trailing" secondItem="iHc-NH-KKT" secondAttribute="trailing" id="cLV-Iy-Uof"/>
                                             <constraint firstItem="03D-XX-8td" firstAttribute="centerX" secondItem="pdQ-vm-Fs9" secondAttribute="centerX" id="oze-si-mLg"/>
+                                            <constraint firstItem="iHc-NH-KKT" firstAttribute="top" secondItem="03D-XX-8td" secondAttribute="top" constant="20" id="pxw-Xm-JUq"/>
                                         </constraints>
                                     </view>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tTP-ZY-etc" userLabel="Exit">
@@ -173,14 +200,16 @@
                     <navigationItem key="navigationItem" id="0Ss-N3-foI"/>
                     <connections>
                         <outlet property="entryView" destination="YfL-lb-Dec" id="1iS-b3-LBC"/>
+                        <outlet property="leftMessage" destination="yNN-IA-QSG" id="Ake-Fc-bYV"/>
                         <outlet property="mapView" destination="FGk-Oc-s3K" id="1QM-Gr-UQt"/>
+                        <outlet property="rightMessage" destination="iHc-NH-KKT" id="fgt-MA-D0w"/>
                         <outlet property="traveledPlacesView" destination="1sS-my-vdb" id="rsB-hD-Ney"/>
                         <segue destination="JY0-xd-Gts" kind="show" identifier="ShowAlbumViewController" id="aoO-Ae-XGK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-39" y="139"/>
+            <point key="canvasLocation" x="-39.130434782608695" y="138.58695652173915"/>
         </scene>
         <!--Album View Controller-->
         <scene sceneID="WCV-P3-YWe">
