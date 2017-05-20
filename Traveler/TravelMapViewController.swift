@@ -16,7 +16,11 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var rightMessage: UILabel!
     @IBOutlet weak var leftMessage: UILabel!
+    @IBOutlet weak var bottomTray: UIView!
+    
+    
     var deleteMode: Bool = false
+    var selectedPinID: String!
     
     override func viewDidLoad() {super.viewDidLoad()
         UIApplication.shared.statusBarStyle = .lightContent
@@ -65,6 +69,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         guard let pinAnnotation = view.annotation as? PinAnnotation else{return}
         let uniqueID = pinAnnotation.uniqueIdentifier!
         print("pin \(uniqueID) Selected")
+        selectedPinID = uniqueID
         if deleteMode{
             if let error = Traveler.deletePinFromDataBase(uniqueID: uniqueID){
                 SendToDisplay.error(self,
@@ -74,10 +79,36 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             };mapView.removeAnnotation(view.annotation!)
             switchDeleteMode()
         }else{
-            //segue to AlbumView with info
-            //from here
+            
+            goToLocationAlbum()
+            
+            
+            
         }
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {super.prepare(for: segue, sender: sender)
+        guard let identifier = segue.identifier else{return}
+        if identifier == "ShowAlbumViewController"{
+            if let AlbumVC = segue.destination as? AlbumViewController{
+                AlbumVC.pinUniqueID = selectedPinID
+            }
+        }
+    }
+    
+    func goToLocationAlbum(){
+        UIView.animate(
+            withDuration: 0.5,
+            animations: {
+                self.bottomTray.transform = CGAffineTransform(
+                        translationX: self.bottomTray.frame.origin.x,
+                        y: self.bottomTray.frame.height)
+        }, completion: {
+                completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)
+        })
+    }
+    
+    
     
     @IBAction func enterButton(_ sender: UIButton) {
         UIView.transition(

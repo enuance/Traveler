@@ -199,6 +199,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="0Ss-N3-foI"/>
                     <connections>
+                        <outlet property="bottomTray" destination="pdQ-vm-Fs9" id="FMD-gd-2y6"/>
                         <outlet property="entryView" destination="YfL-lb-Dec" id="1iS-b3-LBC"/>
                         <outlet property="leftMessage" destination="yNN-IA-QSG" id="Ake-Fc-bYV"/>
                         <outlet property="mapView" destination="FGk-Oc-s3K" id="1QM-Gr-UQt"/>
