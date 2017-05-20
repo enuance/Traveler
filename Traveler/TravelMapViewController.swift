@@ -85,7 +85,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             to: traveledPlacesView,
             duration: 0.75,
             options: [.transitionCurlUp, .showHideTransitionViews],
-            completion: {transitioned in /*Enter Code if Needed*/}
+            completion: {transitioned in Traveler.shouldShowIntroMessageIn(self)}
         )
     }
     
@@ -100,7 +100,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     func addTravelerPin(gestureRecognizer: UIGestureRecognizer){
-        guard gestureRecognizer.state == .ended else{return}
+        guard gestureRecognizer.state == .began else{return}
         let touch = gestureRecognizer.location(in: mapView)
         let selectedPoint = mapView.convert(touch, toCoordinateFrom: mapView)
         let uniqueID = UUID().uuidString

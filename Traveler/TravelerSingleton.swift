@@ -69,7 +69,15 @@ class Traveler{
         return nil
     }
     
-    
+    static func shouldShowIntroMessageIn(_ viewController: UIViewController){
+        if UserDefaults.standard.bool(forKey: "isFirstAppLaunch"){
+        SendToDisplay.error(viewController,
+                            errorType: "Go Travel!",
+                            errorMessage: "To travel the World, add pins to the map by holding your finger on the location you would like to see. Select the pin to view that location's photo album.",
+                            assignment: {UserDefaults.standard.set(false, forKey: "isFirstAppLaunch")}
+            )
+        }
+    }
     
     
     
