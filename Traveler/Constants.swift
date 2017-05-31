@@ -144,6 +144,21 @@ struct TravelerCnst {
         return indexList
     }
     
+    //Use this method to Select a Random Page and Index List based on results returned from the Server
+    //This method limits the listIndex by the perPage Amount in order to prevent errors.
+    static func randomPhotoSelections(photos: Int, pages: Int, perPage: Int) -> (pageNum: Int, listIndex: [Int]){
+        guard pages != 0,  pages == ((photos - (photos % perPage)) / perPage), perPage != 0 else{return (0, [])}
+        switch photos {
+        case let x where x < perPage: return (1, indexListRand(x))
+        case let x where x > perPage && (x % perPage) != 0:
+            let removedLastPage = pages - 1
+            return (pageNoRand(removedLastPage),indexListRand(perPage))
+        case let x where x > perPage && (x % perPage) == 0:
+            return (pageNoRand(pages), indexListRand(perPage))
+        default: return (0,[])
+        }
+    }
+    
     //Use This Method when sending Data to a server
     static func convertToJSON(with object: AnyObject) -> (JSONObject: Data?, error: NetworkError?){
         var wouldBeJSON: Data? = nil
