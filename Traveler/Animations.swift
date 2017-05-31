@@ -45,5 +45,46 @@ extension TravelMapViewController{
         }
     }
     
+    func goToLocationAlbum(){
+        UIView.animate(
+            withDuration: 0.2,
+            animations: {
+                self.bottomTray.transform = CGAffineTransform(
+                    translationX: self.bottomTray.frame.origin.x,
+                    y: self.bottomTray.frame.height)
+        }, completion: {
+            completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)
+        })
+    }
+    
+    func showBottomTray(){
+        UIView.animate(withDuration: 0.4, animations: {
+            self.bottomTray.transform = .identity
+        })
+    }
+}
+
+extension AlbumViewController{
+    
+    func moveTrayDown(animated: Bool, completionHandler: (()-> Void)?){
+        let centered = self.collectionTray.frame.origin.x
+        let lowered = self.collectionTray.frame.height
+        if animated{
+            UIView.animate( withDuration: 0.5,
+                            animations: {self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)},
+                            completion:{completed in if let handler = completionHandler{handler()}})}
+        else{
+            self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)
+            if let handler = completionHandler{handler()}
+        }
+    }
+    
+    func moveTrayUp(){
+        UIView.animate(withDuration: 0.5, animations: {
+            self.collectionTray.transform = .identity
+        })
+    }
     
 }
+
+

@@ -236,6 +236,9 @@
                                     <constraint firstAttribute="width" secondItem="gU5-5H-Hgg" secondAttribute="height" multiplier="112:47" id="24k-lF-5yK"/>
                                 </constraints>
                                 <state key="normal" image="Button Back"/>
+                                <connections>
+                                    <action selector="back:" destination="JY0-xd-Gts" eventType="touchUpInside" id="Y1i-t9-7JN"/>
+                                </connections>
                             </button>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pAy-II-4am" userLabel="CollectionTray">
                                 <rect key="frame" x="0.0" y="184" width="414" height="552"/>
@@ -255,25 +258,55 @@
                                             <constraint firstAttribute="height" constant="140" id="SBQ-fD-CLN"/>
                                         </constraints>
                                         <state key="normal" image="World New"/>
+                                        <connections>
+                                            <action selector="newAlbum:" destination="JY0-xd-Gts" eventType="touchUpInside" id="PXv-e2-PGZ"/>
+                                        </connections>
                                     </button>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="jgk-Hf-gMw">
                                         <rect key="frame" x="10" y="140" width="394" height="412"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="wnz-Pk-pWF">
-                                            <size key="itemSize" width="50" height="50"/>
+                                            <size key="itemSize" width="130" height="130"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                             <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         </collectionViewFlowLayout>
                                         <cells>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="t8i-G3-6xq">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="AlbumCollectionCell" id="t8i-G3-6xq" customClass="AlbumCollectionCell" customModule="Traveler" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="130" height="130"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="130" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="44B-dA-avg" userLabel="thumbnail">
+                                                            <rect key="frame" x="0.0" y="0.0" width="130" height="130"/>
+                                                        </imageView>
+                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="QeD-hK-GcR">
+                                                            <rect key="frame" x="47" y="47" width="37" height="37"/>
+                                                            <color key="color" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        </activityIndicatorView>
+                                                    </subviews>
                                                 </view>
+                                                <constraints>
+                                                    <constraint firstAttribute="bottom" secondItem="44B-dA-avg" secondAttribute="bottom" id="61T-vQ-4w7"/>
+                                                    <constraint firstItem="44B-dA-avg" firstAttribute="leading" secondItem="t8i-G3-6xq" secondAttribute="leading" id="BUE-Q7-eYb"/>
+                                                    <constraint firstItem="44B-dA-avg" firstAttribute="top" secondItem="t8i-G3-6xq" secondAttribute="top" id="OQg-2l-ddw"/>
+                                                    <constraint firstItem="44B-dA-avg" firstAttribute="centerY" secondItem="t8i-G3-6xq" secondAttribute="centerY" id="TvN-ca-sQ5"/>
+                                                    <constraint firstItem="QeD-hK-GcR" firstAttribute="centerY" secondItem="t8i-G3-6xq" secondAttribute="centerY" id="YSU-LO-nYU"/>
+                                                    <constraint firstItem="44B-dA-avg" firstAttribute="centerX" secondItem="t8i-G3-6xq" secondAttribute="centerX" id="aN6-0U-69m"/>
+                                                    <constraint firstAttribute="trailing" secondItem="44B-dA-avg" secondAttribute="trailing" id="nIP-R8-sjm"/>
+                                                    <constraint firstItem="QeD-hK-GcR" firstAttribute="centerX" secondItem="t8i-G3-6xq" secondAttribute="centerX" id="zYV-1i-dph"/>
+                                                </constraints>
+                                                <connections>
+                                                    <outlet property="cellThumbnail" destination="44B-dA-avg" id="ORT-1z-RvV"/>
+                                                    <outlet property="whiteSpinner" destination="QeD-hK-GcR" id="ODX-bF-w8G"/>
+                                                </connections>
                                             </collectionViewCell>
                                         </cells>
+                                        <connections>
+                                            <outlet property="dataSource" destination="JY0-xd-Gts" id="XuB-a7-TOU"/>
+                                            <outlet property="delegate" destination="JY0-xd-Gts" id="wbh-fd-zwP"/>
+                                        </connections>
                                     </collectionView>
                                 </subviews>
                                 <constraints>
@@ -309,6 +342,12 @@
                             <constraint firstItem="pAy-II-4am" firstAttribute="leading" secondItem="uPS-r2-Hax" secondAttribute="leading" id="zw7-4N-Gmu"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="albumCollection" destination="jgk-Hf-gMw" id="iyc-k4-E9r"/>
+                        <outlet property="albumLayout" destination="wnz-Pk-pWF" id="twy-oD-TFh"/>
+                        <outlet property="albumLocationMap" destination="LEQ-pn-5lL" id="9dE-5a-e3c"/>
+                        <outlet property="collectionTray" destination="pAy-II-4am" id="EwO-jf-aa1"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fyn-Hg-IgG" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <view contentMode="scaleToFill" id="mV7-9T-WUb" userLabel="PhotoView">

@@ -19,6 +19,7 @@
 		206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206135711EC697B20071FF17 /* ErrorHandling.swift */; };
 		20B2D9931ECA857A00C97A32 /* PinAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B2D9921ECA857A00C97A32 /* PinAnnotation.swift */; };
 		20BE4B5A1EC7DB9800EA57B0 /* TravelMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */; };
+		20C18A7D1ED358AB00251389 /* AlbumCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C18A7C1ED358AB00251389 /* AlbumCollectionCell.swift */; };
 		20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */; };
 		20FB0A4D1ECBDF630080BABF /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FB0A4C1ECBDF630080BABF /* Animations.swift */; };
 /* End PBXBuildFile section */
@@ -38,6 +39,7 @@
 		206135711EC697B20071FF17 /* ErrorHandling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorHandling.swift; sourceTree = "<group>"; };
 		20B2D9921ECA857A00C97A32 /* PinAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinAnnotation.swift; sourceTree = "<group>"; };
 		20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelMapViewController.swift; sourceTree = "<group>"; };
+		20C18A7C1ED358AB00251389 /* AlbumCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlbumCollectionCell.swift; sourceTree = "<group>"; };
 		20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelerSingleton.swift; sourceTree = "<group>"; };
 		20FB0A4C1ECBDF630080BABF /* Animations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -120,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				20B2D9921ECA857A00C97A32 /* PinAnnotation.swift */,
+				20C18A7C1ED358AB00251389 /* AlbumCollectionCell.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 			files = (
 				20CCED5D1EC6915F00B2C77C /* TravelerSingleton.swift in Sources */,
 				200C7DF31EC531AB008C42C4 /* Constants.swift in Sources */,
+				20C18A7D1ED358AB00251389 /* AlbumCollectionCell.swift in Sources */,
 				206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */,
 				200C7DD81EC52A3D008C42C4 /* AppDelegate.swift in Sources */,
 				205CEE5C1ECA429E008B32E5 /* AlbumViewController.swift in Sources */,

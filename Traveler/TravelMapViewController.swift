@@ -29,8 +29,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
 
 
-    override func viewWillAppear(_ animated: Bool) {super.viewWillAppear(animated)
-        
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        showBottomTray()
     }
 
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -77,14 +78,8 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
                                     errorMessage: error.localizedDescription,
                                     assignment: nil)
             };mapView.removeAnnotation(view.annotation!)
-            switchDeleteMode()
-        }else{
-            
-            goToLocationAlbum()
-            
-            
-            
-        }
+            switchDeleteMode()}
+        else{goToLocationAlbum()}
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {super.prepare(for: segue, sender: sender)
@@ -95,19 +90,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             }
         }
     }
-    
-    func goToLocationAlbum(){
-        UIView.animate(
-            withDuration: 0.5,
-            animations: {
-                self.bottomTray.transform = CGAffineTransform(
-                        translationX: self.bottomTray.frame.origin.x,
-                        y: self.bottomTray.frame.height)
-        }, completion: {
-                completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)
-        })
-    }
-    
     
     
     @IBAction func enterButton(_ sender: UIButton) {
@@ -156,7 +138,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
 
-    
     
 }
 

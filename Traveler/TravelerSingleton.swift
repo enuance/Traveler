@@ -52,7 +52,7 @@ class Traveler{
     
     static func deletePinFromDataBase(uniqueID: String) -> DatabaseError?{
         let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
-        //Search criteia should bring the one meme that has the Unique ID
+        //Search criteia should bring the one Pin that has the Unique ID
         let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
         requestPinToDelete.predicate = searchCriteria
         var pinToDelete: Pin! = nil

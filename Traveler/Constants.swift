@@ -10,6 +10,11 @@ import UIKit
 import MapKit
 
 struct FlickrCnst {
+    struct Prefered {
+        static let PhotosPerPage = 15
+        private init(){}
+    }
+    
     struct API {
         static let Scheme = "https"
         static let Host = "api.flickr.com"
@@ -25,6 +30,7 @@ struct FlickrCnst {
         static let NoJSONCallback = "nojsoncallback"
         static let SafeSearch = "safe_search"
         static let Page = "page"
+        static let PerPage = "per_page"
         static let Radius = "radius"
         static let UnitOfMeasure = "radius_units"
         static let ContentType = "content_type"
@@ -45,6 +51,7 @@ struct FlickrCnst {
         static let Radius = "10"
         static let Miles = "mi"
         static let PhotosOnly = "1"
+        static let PhotosPerPage = "\(Prefered.PhotosPerPage)"
         static func extrasList(_ extras: String...)-> String{return extras.joined(separator: ",")}
         private init (){}
     }
@@ -62,7 +69,8 @@ struct FlickrCnst {
     }
     
     struct ResponseValues {
-        static let OKStatus = "ok"
+        static let statusOK = "ok"
+        static let statusFail = "fail"
         private init (){}
     }
     
@@ -79,7 +87,7 @@ struct FlickrCnst {
         private init (){}
     }
     
-    static func URLwith(_ parameters: [String: AnyObject]) -> URL {
+    static func URLwith(_ parameters: [String: Any]) -> URL {
         var components = URLComponents()
         components.scheme = FlickrCnst.API.Scheme
         components.host = FlickrCnst.API.Host
@@ -104,6 +112,7 @@ struct FlickrCnst {
             FlickrCnst.ParameterKeys.UnitOfMeasure : FlickrCnst.ParameterValues.Miles,
             FlickrCnst.ParameterKeys.ContentType : FlickrCnst.ParameterValues.PhotosOnly,
             FlickrCnst.ParameterKeys.SafeSearch : FlickrCnst.ParameterValues.UseSafeSearch,
+            FlickrCnst.ParameterKeys.PerPage : FlickrCnst.ParameterValues.PhotosPerPage,
             FlickrCnst.ParameterKeys.Extras : FlickrCnst.ParameterValues.ExtrasList
         ]
         if let pageNumber = withPage{methodParameters[FlickrCnst.ParameterKeys.Page] = pageNumber}
@@ -122,15 +131,14 @@ struct TravelerCnst {
     }
     
     //Use this method to create a list of random indexing integers
-    static func indexListRand(_ countOfList: Int, _ maxResults: Int) -> [Int]{
-        guard (countOfList != 0), (maxResults != 0) else{return [Int]()}
-        let variableMaxResult = min(maxResults, countOfList)
-        var indexList = [Int]()
-        for _ in 1...variableMaxResult{
-            var indexToEnter = Int(arc4random_uniform(UInt32(countOfList)))
-            while indexList.contains(indexToEnter){
-                indexToEnter = Int(arc4random_uniform(UInt32(countOfList)))
-            }
+    static func indexListRand(_ countOfList: Int) -> [Int]{
+        guard (countOfList != 0) else{return [Int]()}
+        var indexList = [Int](); var remainingList = Array(0..<countOfList)
+        var indexer: Int{get{return Int(arc4random_uniform(UInt32(remainingList.count)))}}
+        for _ in 1...countOfList{
+            let index = indexer
+            let indexToEnter = remainingList[index]
+            remainingList.remove(at: index)
             indexList.append(indexToEnter)
         }
         return indexList
@@ -162,8 +170,10 @@ struct TravelerCnst {
     static let color = Color()
     struct Color{
         var teal: UIColor{get{return UIColor(red: decimal(50), green: decimal(110), blue: decimal(117), alpha: 1)}}
+        var transparentTeal: UIColor{get{return UIColor(red: decimal(50), green: decimal(110), blue: decimal(117), alpha: 0.4)}}
         var lightTeal: UIColor{get{return UIColor(red: decimal(80), green: decimal(176), blue: decimal(187), alpha: 1)}}
         var gold: UIColor{get{return UIColor(red: decimal(176), green: decimal(142), blue: decimal(101), alpha: 1)}}
+        var transparentGold: UIColor{get{return UIColor(red: decimal(176), green: decimal(142), blue: decimal(101), alpha: 0.4)}}
         var brownGold: UIColor{get{return UIColor(red: decimal(75), green: decimal(66), blue: decimal(56), alpha: 1)}}
         var white: UIColor{get{return UIColor(red: decimal(255), green: decimal(255), blue: decimal(255), alpha: 1)}}
         var mutedWhite: UIColor{get{return UIColor(red: decimal(185), green: decimal(185), blue: decimal(185), alpha: 1)}}
