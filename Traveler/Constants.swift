@@ -65,6 +65,7 @@ struct FlickrCnst {
         static let SquareURL = "url_q"
         static let Pages = "pages"
         static let Total = "total"
+        static let PhotoID = "id"
         private init (){}
     }
     
@@ -147,7 +148,7 @@ struct TravelerCnst {
     //Use this method to Select a Random Page and Index List based on results returned from the Server
     //This method limits the listIndex by the perPage Amount in order to prevent errors.
     static func randomPhotoSelections(photos: Int, pages: Int, perPage: Int) -> (pageNum: Int, listIndex: [Int]){
-        guard pages != 0,  pages == ((photos - (photos % perPage)) / perPage), perPage != 0 else{return (0, [])}
+        guard pages != 0,  pages ==  (((photos - (photos % perPage)) / perPage) + 1), perPage != 0 else{return (0, [])}
         switch photos {
         case let x where x < perPage: return (1, indexListRand(x))
         case let x where x > perPage && (x % perPage) != 0:
