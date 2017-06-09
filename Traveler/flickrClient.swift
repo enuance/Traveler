@@ -10,8 +10,7 @@ import Foundation
 
 class flickrClient{
     
-    //Test this
-    private func infoForPhotosAtLocation(
+    static func infoForPhotosAtLocation(
         latitude: String,
         longitude: String,
         completion: @escaping(_ totalPhotos: Int?, _ totalPages: Int?, _ error: NetworkError? )-> Void){
@@ -19,7 +18,6 @@ class flickrClient{
         let domain = "infoForPhotosAtLocation(:_)"
         let parameters = FlickrCnst.methodParametersWith(latitude, longitude)
         let request = URLRequest(url: FlickrCnst.URLwith(parameters))
-        print(FlickrCnst.URLwith(parameters))
         
         let task = Traveler.shared.session.dataTask(with: request){ data, response, error in
             guard (error == nil) else{return completion(nil, nil, NetworkError.general)}
@@ -31,27 +29,30 @@ class flickrClient{
             //Convert the data into Swift's AnyObject Type
             let results = TravelerCnst.convertToSwift(with: data)
             //Exit the method if the conversion returns a conversion error
-            guard let resultsObject = results.swiftObject else {return completion(nil, nil, results.error)}
+            guard let resultsObject = results.swiftObject as? [String : Any] else {return completion(nil, nil, results.error)}
             //Validate the expected object to be recieved as a dictionary
             guard let resultDictionary = resultsObject[FlickrCnst.ResponseKeys.Photos] as? [String: Any]
                 else{return completion(nil, nil, NetworkError.invalidAPIPath(domain: domain))}
-            //Validate that total and pages in the dictionary can be casted as an integer.
-            guard let numOfPhotos = resultDictionary[FlickrCnst.ResponseKeys.Total] as? Int,
-                let numOfPages = resultDictionary[FlickrCnst.ResponseKeys.Pages] as? Int
-                else{return completion(nil, nil, NetworkError.invalidAPIPath(domain: domain))}
+            //Validate that "total" and "pages" in the dictionary can be casted as an integer.
+            //The "total" photos comes back as a string when deserialized from JSON! Need to further convert it into an Int.
+            guard let numberOfPhotos = resultDictionary[FlickrCnst.ResponseKeys.Total] as? String, let numOfPhotos = Int(numberOfPhotos),
+                let numOfPages = resultDictionary[FlickrCnst.ResponseKeys.Pages] as? Int else{
+                    return completion(nil, nil, NetworkError.invalidAPIPath(domain: domain))
+            }
+            
             return completion(numOfPhotos, numOfPages, nil)
         }
         task.resume()
     }
     
-    //Test this
-    private func photosForLocation(
+    static func photosForLocation(
         latitude: String,
         longitude: String,
         completion: @escaping(_ photoList: [(thumbnail: URL, fullSize: URL, photoID: String)]?, _ error: NetworkError? )-> Void){
         
         infoForPhotosAtLocation(latitude: latitude, longitude: longitude){ totalPhotos, totalPages, error in
-            guard (error == nil) else{return completion(nil, error)}
+            guard (error == nil) else{ return completion(nil, error)}
+            
             guard let photosReturned = totalPhotos, photosReturned != 0 else{return completion( [(URL, URL, String)](),nil)}
             guard let pagesReturned = totalPages, pagesReturned != 0 else{return completion( [(URL, URL, String)](),nil)}
             
@@ -65,7 +66,6 @@ class flickrClient{
             let domain = "photosForLocation(:_)"
             let parameters = FlickrCnst.methodParametersWith(latitude, longitude, pageNumber)
             let request = URLRequest(url: FlickrCnst.URLwith(parameters))
-            print(FlickrCnst.URLwith(parameters))
             
             let task = Traveler.shared.session.dataTask(with: request){ data, response, error in
                 guard (error == nil) else{return completion(nil, NetworkError.general)}
@@ -77,7 +77,7 @@ class flickrClient{
                 //Convert the data into Swift's AnyObject Type
                 let results = TravelerCnst.convertToSwift(with: data)
                 //Exit the method if the conversion returns a conversion error
-                guard let resultsObject = results.swiftObject else {return completion(nil, results.error)}
+                guard let resultsObject = results.swiftObject as? [String : Any] else {return completion(nil, results.error)}
                 //Validate the expected object to be recieved as a dictionary
                 guard let resultDictionary = resultsObject[FlickrCnst.ResponseKeys.Photos] as? [String: Any]
                     else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
@@ -89,16 +89,20 @@ class flickrClient{
                 
                 for indexer in photoIndexList{
                     let returnedPhoto = photoDictionary[indexer]
-                    guard let thumbnail = returnedPhoto[FlickrCnst.ResponseKeys.SquareURL] as? URL,
-                        let fullImage = returnedPhoto[FlickrCnst.ResponseKeys.MediumURL] as? URL,
+                    guard let thumbnailString = returnedPhoto[FlickrCnst.ResponseKeys.SquareURL] as? String,
+                        let thumbnail = URL(string: thumbnailString),
+                        let fullImageString = returnedPhoto[FlickrCnst.ResponseKeys.MediumURL] as? String,
+                        let fullImage = URL(string: fullImageString),
                         let photoID = returnedPhoto[FlickrCnst.ResponseKeys.PhotoID] as? String
-                        else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
+                        else{ print("Photo excluded during the loop is \(photoDictionary[indexer])"); continue}
                     photosToReturn.append(thumbnail: thumbnail, fullSize: fullImage, photoID: photoID)
                 }
+                
                 return completion(photosToReturn, nil)
             }
             task.resume()
         }
     }
+    
     
 }

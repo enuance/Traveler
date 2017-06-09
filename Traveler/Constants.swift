@@ -156,6 +156,9 @@ struct TravelerCnst {
             return (pageNoRand(removedLastPage),indexListRand(perPage))
         case let x where x > perPage && (x % perPage) == 0:
             return (pageNoRand(pages), indexListRand(perPage))
+        case let x where x > 4000:
+            let newPages = 4000/perPage
+            return (pageNoRand(newPages),indexListRand(perPage))
         default: return (0,[])
         }
     }
