@@ -6,7 +6,7 @@
 //  Copyright © 2017 Stephen Martinez. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class flickrClient{
     
@@ -167,7 +167,23 @@ class flickrClient{
         }
     }
 
-    
+    static func getPhotoFor(url: URL, completion: @escaping(_ image: UIImage?, _ error: NetworkError?) -> Void  ){
+        let domain = "getPhotoFor(:_)"
+        let task = Traveler.shared.session.dataTask(with: url){ data, response, error in
+            guard (error == nil) else{return completion(nil, NetworkError.general)}
+            //Allow only OK status to continue
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299
+                else{ return completion(nil, NetworkError.nonOKHTTP(status: (response as! HTTPURLResponse).statusCode))}
+            //Exit method if no data is present.
+            guard let data = data else{return completion(nil, NetworkError.noDataReturned(domain: domain))}
+            //Convert the data into Swift's AnyObject Type
+            let results = UIImage(data: data)
+            //Exit the method if the conversion returns a conversion error
+            guard let photo = results else {return completion(nil, NetworkError.general)}
+            return completion(photo, nil)
+        }
+        task.resume()
+    }
     
     
 }
