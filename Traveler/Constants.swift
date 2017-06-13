@@ -151,14 +151,14 @@ struct TravelerCnst {
         guard pages != 0,  pages ==  (((photos - (photos % perPage)) / perPage) + 1), perPage != 0 else{return (0, [])}
         switch photos {
         case let x where x < perPage: return (1, indexListRand(x))
+        case let x where x > 4000:
+            let newPages = 4000/perPage
+            return (pageNoRand(newPages),indexListRand(perPage))
         case let x where x > perPage && (x % perPage) != 0:
             let removedLastPage = pages - 1
             return (pageNoRand(removedLastPage),indexListRand(perPage))
         case let x where x > perPage && (x % perPage) == 0:
             return (pageNoRand(pages), indexListRand(perPage))
-        case let x where x > 4000:
-            let newPages = 4000/perPage
-            return (pageNoRand(newPages),indexListRand(perPage))
         default: return (0,[])
         }
     }
