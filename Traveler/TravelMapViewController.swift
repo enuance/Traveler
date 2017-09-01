@@ -20,20 +20,27 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     
     var deleteMode: Bool = false
-    var selectedPinID: String!
+    //var selectedPinID: String!
+    //var selectedPinIsEmpty: Bool!
+    var selectedPin: PinAnnotation!
     
     override func viewDidLoad() {super.viewDidLoad()
         UIApplication.shared.statusBarStyle = .lightContent
         setupTouchSenitivity()
-        addDataBasePins(to: mapView)
     }
 
-
+    override func viewWillAppear(_ animated: Bool) { super.viewWillAppear(animated)}
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        addDataBasePins(to: mapView)
         showBottomTray()
     }
 
+    override func viewDidDisappear(_ animated: Bool) { super.viewDidDisappear(animated)
+        mapView.removeAnnotations(mapView.annotations)
+    }
+    
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseId = "TravelerPin"
         var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
@@ -70,7 +77,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         guard let pinAnnotation = view.annotation as? PinAnnotation else{return}
         let uniqueID = pinAnnotation.uniqueIdentifier!
         print("pin \(uniqueID) Selected")
-        selectedPinID = uniqueID
+        //selectedPinID = uniqueID
+        //selectedPinIsEmpty = pinAnnotation.isEmpty
+        selectedPin = pinAnnotation
         if deleteMode{
             if let error = Traveler.deletePinFromDataBase(uniqueID: uniqueID){
                 SendToDisplay.error(self,
@@ -86,7 +95,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         guard let identifier = segue.identifier else{return}
         if identifier == "ShowAlbumViewController"{
             if let AlbumVC = segue.destination as? AlbumViewController{
-                AlbumVC.pinUniqueID = selectedPinID
+                //AlbumVC.pinUniqueID = selectedPinID
+                //AlbumVC.needsAlbumDownload = selectedPinIsEmpty
+                AlbumVC.selectedPin = selectedPin
             }
         }
     }

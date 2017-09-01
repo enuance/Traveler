@@ -186,4 +186,41 @@ class flickrClient{
     }
     
     
+    
+    
+    static func getPhotoFor(thumbnailURL: URL, fullSizeURL: URL,completion:
+        @escaping(_ images: (thumbnail: UIImage?, fullSize: UIImage?)?, _ error: NetworkError?) -> Void  ){
+        
+        let domain = "getPhotoFor(:_)"
+        let taskOne = Traveler.shared.session.dataTask(with: thumbnailURL){ data, response, error in
+            guard (error == nil) else{return completion(nil, NetworkError.general)}
+            //Allow only OK status to continue
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299
+                else{ return completion(nil, NetworkError.nonOKHTTP(status: (response as! HTTPURLResponse).statusCode))}
+            //Exit method if no data is present.
+            guard let data = data else{return completion(nil, NetworkError.noDataReturned(domain: domain))}
+            //Convert the data into Swift's AnyObject Type
+            let results = UIImage(data: data)
+            //Exit the method if the conversion returns a conversion error
+            guard let thumbnailPhoto = results else {return completion(nil, NetworkError.general)}
+            
+            let taskTwo = Traveler.shared.session.dataTask(with: fullSizeURL){ data, response, error in
+                guard (error == nil) else{return completion(nil, NetworkError.general)}
+                //Allow only OK status to continue
+                guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299
+                    else{ return completion(nil, NetworkError.nonOKHTTP(status: (response as! HTTPURLResponse).statusCode))}
+                //Exit method if no data is present.
+                guard let data = data else{return completion(nil, NetworkError.noDataReturned(domain: domain))}
+                //Convert the data into Swift's AnyObject Type
+                let results = UIImage(data: data)
+                //Exit the method if the conversion returns a conversion error
+                guard let fullSizePhoto = results else {return completion(nil, NetworkError.general)}
+            
+                return completion((thumbnailPhoto, fullSizePhoto), nil)
+            }
+            taskTwo.resume()
+        }
+        taskOne.resume()
+    }
+    
 }

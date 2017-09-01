@@ -13,6 +13,7 @@ class PinAnnotation: NSObject, MKAnnotation{
     
     var coordinate: CLLocationCoordinate2D
     var uniqueIdentifier: String?
+    var isEmpty: Bool = true
     var needsDrop: Bool = true
     
     init(coordinate: CLLocationCoordinate2D, uniqueIdentifier: String?){

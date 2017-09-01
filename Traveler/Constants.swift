@@ -11,7 +11,7 @@ import MapKit
 
 struct FlickrCnst {
     struct Prefered {
-        static let PhotosPerPage = 15
+        static let PhotosPerPage = 21
         private init(){}
     }
     
@@ -124,6 +124,10 @@ struct FlickrCnst {
 }
 
 struct TravelerCnst {
+    
+    //Use across the app for safe, transient image storage to enable smooth access from collection view.
+    static let imageCache = NSCache<AnyObject, AnyObject>()
+    
     //Use this method to create a random page number
     static func pageNoRand(_ pages: Int) -> Int{
         let firstTry = pages == 0 ? 0 : Int(arc4random_uniform(UInt32(pages))) + 1
@@ -182,7 +186,25 @@ struct TravelerCnst {
     static func convertToPinAnnotation(with DBPin: Pin) -> (pinAnnotation: PinAnnotation?, error: DatabaseError?){
         let coordinates = CLLocationCoordinate2DMake(DBPin.latitude, DBPin.longitude)
         guard let uniqueIdentifier = DBPin.uniqueID else{return (nil, DatabaseError.nonUniqueEntry)}
-        return (PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier), nil)
+        guard let photoCount = DBPin.albumPhotos?.count else {return (nil, DatabaseError.associatedValueNotFound)}
+        let dbPhotoIsEmpty = (photoCount == 0)
+        let annotatedPin = PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier)
+        annotatedPin.isEmpty = dbPhotoIsEmpty
+        return (annotatedPin, nil)
+    }
+    
+    //For use with Collection Cells
+    static func createClearPlaceHolder() -> UIImage{
+        let size = CGSize(width: 12, height: 12)
+        let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        let scale: CGFloat = 0.0
+        let colorFill = UIColor.clear
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        colorFill.set()
+        UIRectFill(rect)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!
     }
     
     //Colors for use in accordance with the App's theme.
@@ -200,11 +222,34 @@ struct TravelerCnst {
         var gray: UIColor{get{return UIColor.darkGray}}
         private func decimal(_ rgbValue: Int) -> CGFloat{return CGFloat(rgbValue)/CGFloat(255)}
     }
-    
 }
 
-
-
+//For use back and forth between the data base and the app
+class TravelerPhoto{
+    var thumbnailImage: UIImage!
+    var thumbnailData: NSData!
+    var fullsizeImage: UIImage!
+    var fullsizeData: NSData!
+    var photoID: String
+    
+    init(thumbnail: UIImage, fullsize: UIImage, photoID: String) {
+        self.thumbnailImage = thumbnail
+        self.fullsizeImage = fullsize
+        self.photoID = photoID
+        self.thumbnailData = NSData(data: UIImagePNGRepresentation(thumbnail)!)
+        self.fullsizeData = NSData(data: UIImageJPEGRepresentation(fullsize, 1.0)!)
+    }
+    
+    init(thumbnail: NSData, fullsize: NSData, photoID: String){
+        self.thumbnailImage = UIImage(data: thumbnail as Data)!
+        self.fullsizeImage = UIImage(data: fullsize as Data)!
+        self.photoID = photoID
+        self.thumbnailData = thumbnail
+        self.fullsizeData = fullsize
+    }
+    
+    
+}
 
 
 

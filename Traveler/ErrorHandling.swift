@@ -52,7 +52,9 @@ enum NetworkError: LocalizedError{
 enum DatabaseError: LocalizedError{
     case general(dbDescription: String)
     case nonUniqueEntry
+    case associatedValueNotFound
     case inconvertableObject(object: String)
+    
     
     var localizedDescription: String{
         switch self{
@@ -60,6 +62,8 @@ enum DatabaseError: LocalizedError{
             return "DataBase Error\(description)"
         case .nonUniqueEntry:
             return "You attempted to enter a non unique entry into the DataBase. Please set the unique Identifier"
+        case .associatedValueNotFound:
+            return "You attempted to retrieve a value not associated with the pin in the DataBase"
         case .inconvertableObject(object: let objectDescription):
             return "Unable to convert DataBase object to: \(objectDescription)"
         }
@@ -82,7 +86,6 @@ enum GeneralError: String{
 
 
 //Allows a way to propogate Error Messages to the User throughout the app
-
 class SendToDisplay{
     class func error(_ displayer: UIViewController, errorType: String, errorMessage: String, assignment: (() -> Void)?) {
         let errorColor = TravelerCnst.color.gold

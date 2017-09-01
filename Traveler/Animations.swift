@@ -80,8 +80,12 @@ extension AlbumViewController{
     }
     
     func moveTrayUp(){
-        UIView.animate(withDuration: 0.5, animations: {
-            self.collectionTray.transform = .identity
+        if trayRemovalFlag{return}
+        UIView.animate(withDuration: 0.5,
+                       animations: {self.collectionTray.transform = .identity},
+                       completion: { completed in if self.trayRemovalFlag{
+                        self.moveTrayDown(animated: true, completionHandler: nil)
+                        }
         })
     }
     

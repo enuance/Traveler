@@ -14,10 +14,11 @@ class AlbumCollectionCell: UICollectionViewCell{
     @IBOutlet weak var whiteSpinner: UIActivityIndicatorView!
     var locationID: String!
     var photoID: String!
-    var thumbnailToSet: UIImage!
+    //var thumbnailToSet: UIImage!
     
-    override func awakeFromNib() { super.awakeFromNib()
-        //whiteSpinner.color = TravelerCnst.color.gold
+    
+    override func prepareForReuse() {super.prepareForReuse()
+        //cellThumbnail.image = TravelerCnst.createClearPlaceHolder()
     }
     
 }
