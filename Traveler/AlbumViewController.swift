@@ -20,7 +20,7 @@ class AlbumViewController: UIViewController, UICollectionViewDelegate, UICollect
     var trayRemovalFlag: Bool = false
     var selectedPin: PinAnnotation!
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
-    var dbTravelerPhotoList = [TravelerPhoto]()
+    var dbTravelerPhotoList = [Int : TravelerPhoto]()
     
     
     override func viewDidLoad() {super.viewDidLoad()
@@ -176,11 +176,44 @@ extension AlbumViewController{
                         }
                         return
                     }
-                    else{ DispatchQueue.main.async {
+                    else{
+                        
+                        //Run Background DB Upload of verfiedPhotoList here:
+                        
+                        for (index, photo) in verifiedPhotoList.enumerated(){
+                            //Begine the loop off main thread
+                            flickrClient.getPhotoFor(thumbnailURL: photo.thumbnail, fullSizeURL: photo.fullSize){ imageSet , error in
+                                guard (error == nil) else{
+                                    SendToDisplay.error(self,
+                                                        errorType: "Network Error While Retrieving Photo",
+                                                        errorMessage: error!.localizedDescription,
+                                                        assignment: {self.back(self)})
+                                    return
+                                }
+                                guard let imageSet = imageSet, let thumbnail = imageSet.thumbnail, let fullPhoto = imageSet.fullSize else{
+                                    SendToDisplay.error(self,
+                                                        errorType: "Network Error",
+                                                        errorMessage: "The photo was not able to be converted to a viewable format",
+                                                        assignment: {self.back(self)})
+                                    return
+                                }
+                                let retrievedPhoto = TravelerPhoto(thumbnail: thumbnail, fullsize: fullPhoto, photoID: photo.photoID)
+                                self.dbTravelerPhotoList[index] = retrievedPhoto
+                                if let dbError = Traveler.checkAndSave(retrievedPhoto, pinID: self.selectedPin.uniqueIdentifier!, concurrent: true){
+                                    SendToDisplay.error(self,
+                                                        errorType: "DataBase Error",
+                                                        errorMessage: dbError.localizedDescription,
+                                                        assignment: nil)
+                                }
+                                print("Successfully Saved photo to DB and loaded DBPhotoList with photo")
+                            }
+                        }
+                        DispatchQueue.main.async {
                         self.downloadList = verifiedPhotoList
                         print("\(self.downloadList.count) photos have been loaded from flickr!")
                         self.albumCollection.reloadData()
                         }
+                        
                     }
                 }
             }
