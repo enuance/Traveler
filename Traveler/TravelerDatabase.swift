@@ -41,6 +41,10 @@ extension Traveler{
         catch{return (nil, DatabaseError.general(dbDescription: error.localizedDescription))}
     }
     
+
+    
+    
+    
     static func deletePinFromDataBase(uniqueID: String) -> DatabaseError?{
         let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
         //Search criteia should bring the one Pin that has the Unique ID
@@ -144,7 +148,37 @@ extension Traveler{
         return (nil, nil)
     }
     
+    //This Method needs testing::::::::::::::::::::::::::::::::::::::::::::::::::
     
+    //Retrieve Photos from the data base
+    static func retrievePhotosFromDataBase(pinUniqueID: String, concurrent: Bool)-> (photos: [TravelerPhoto?]?, error: DatabaseError?){
+        let assignedContext = concurrent ? Traveler.shared.backgroundContext : Traveler.shared.context
+        
+        let requestedPin: NSFetchRequest<Pin> = Pin.fetchRequest()
+        //Search criteia should bring the one Pin that has the Unique ID
+        let searchCriteria = NSPredicate(format: "uniqueID = %@", pinUniqueID)
+        requestedPin.predicate = searchCriteria
+        var pinToRetrieve: Pin! = nil
+        do{pinToRetrieve = try assignedContext.fetch(requestedPin).first}
+        catch{return (nil , DatabaseError.general(dbDescription: error.localizedDescription))}
+        
+        var travelerAlbum = [TravelerPhoto]()
+        
+        if let pinFound = pinToRetrieve,
+            let unknownAlbum = pinFound.albumPhotos?.allObjects,
+            let photoAlbum = unknownAlbum as? [Photo]{
+            for aPhoto in photoAlbum{
+                if let smallData = aPhoto.thumbnail, let largeData = aPhoto.fullSize, let photoID = aPhoto.uniqueID{
+                    let convertedPhoto = TravelerPhoto(thumbnail: smallData, fullsize: largeData, photoID: photoID)
+                    travelerAlbum.append(convertedPhoto)
+                }else{
+                    return(nil, DatabaseError.inconvertableObject(object: "Photo from pin location"))
+                }
+            }
+            return (travelerAlbum, nil)
+        }
+        return (nil, DatabaseError.general(dbDescription: "The Unique ID for the location could not produce a photo album from the DataBase"))
+    }
     
     
     

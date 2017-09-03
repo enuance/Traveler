@@ -181,7 +181,7 @@ extension AlbumViewController{
                         //Run Background DB Upload of verfiedPhotoList here:
                         
                         for (index, photo) in verifiedPhotoList.enumerated(){
-                            //Begine the loop off main thread
+                            //Begin the loop off main thread
                             flickrClient.getPhotoFor(thumbnailURL: photo.thumbnail, fullSizeURL: photo.fullSize){ imageSet , error in
                                 guard (error == nil) else{
                                     SendToDisplay.error(self,
