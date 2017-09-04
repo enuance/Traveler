@@ -151,7 +151,7 @@ extension Traveler{
     //This Method needs testing::::::::::::::::::::::::::::::::::::::::::::::::::
     
     //Retrieve Photos from the data base
-    static func retrievePhotosFromDataBase(pinUniqueID: String, concurrent: Bool)-> (photos: [TravelerPhoto?]?, error: DatabaseError?){
+    static func retrievePhotosFromDataBase(pinUniqueID: String, concurrent: Bool)-> (photos: [TravelerPhoto]?, error: DatabaseError?){
         let assignedContext = concurrent ? Traveler.shared.backgroundContext : Traveler.shared.context
         
         let requestedPin: NSFetchRequest<Pin> = Pin.fetchRequest()
