@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Xat-ii-QKG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Xat-ii-QKG">
     <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -226,6 +226,9 @@
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="LEQ-pn-5lL">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                                <connections>
+                                    <outlet property="delegate" destination="JY0-xd-Gts" id="vsG-Ka-GYf"/>
+                                </connections>
                             </mapView>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ltN-pb-R0T" userLabel="AnchorView">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="368"/>
@@ -346,7 +349,9 @@
                         <outlet property="albumCollection" destination="jgk-Hf-gMw" id="iyc-k4-E9r"/>
                         <outlet property="albumLayout" destination="wnz-Pk-pWF" id="twy-oD-TFh"/>
                         <outlet property="albumLocationMap" destination="LEQ-pn-5lL" id="9dE-5a-e3c"/>
+                        <outlet property="backButton" destination="gU5-5H-Hgg" id="iZt-Ro-gsC"/>
                         <outlet property="collectionTray" destination="pAy-II-4am" id="EwO-jf-aa1"/>
+                        <outlet property="mapAnchoringView" destination="ltN-pb-R0T" id="6tH-3g-HjP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fyn-Hg-IgG" userLabel="First Responder" sceneMemberID="firstResponder"/>

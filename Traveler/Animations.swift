@@ -36,6 +36,7 @@ extension TravelMapViewController{
         }
     }
     
+    
     func animateMessage(show: Bool){
         switch show{
         case true: UIView.animate(withDuration: 0.5, animations:
@@ -88,6 +89,32 @@ extension AlbumViewController{
                         }
         })
     }
+    
+    
+    func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
+        for pinView in views{
+            if let pin = pinView.annotation as? PinAnnotation, pin.needsDrop{
+                pin.needsDrop = false
+                let landingLocation = pinView.frame
+                pinView.frame = CGRect(
+                    x: pinView.frame.origin.x,
+                    y: pinView.frame.origin.y - self.view.frame.size.height,
+                    width: pinView.frame.size.width,
+                    height: pinView.frame.size.height)
+                
+                UIView.animate(
+                    withDuration: 0.5, delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 2,
+                    options: .curveLinear,
+                    animations: ({pinView.frame = landingLocation}),
+                    completion: nil
+                )
+                
+            }
+        }
+    }
+    
     
 }
 

@@ -15,20 +15,28 @@ class AlbumViewController: UIViewController {
     @IBOutlet weak var albumLocationMap: MKMapView!
     @IBOutlet weak var albumCollection: UICollectionView!
     @IBOutlet weak var albumLayout: UICollectionViewFlowLayout!
+    @IBOutlet weak var mapAnchoringView: UIView!
     @IBOutlet weak var collectionTray: UIView!
-    var trayRemovalFlag: Bool = false
+    @IBOutlet weak var backButton: UIButton!
+    
+    var trayRemovalFlag = false
     var selectedPin: PinAnnotation!
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var dbTravelerPhotoList = [Int : TravelerPhoto]()
+    var dbFinishedUploading = false
+
     
     override func viewDidLoad() {super.viewDidLoad()
+        TravelerCnst.map.zoomTarget = locateZoomTarget()
+        initialPinCheck()
+        albumLocationMap.isUserInteractionEnabled = false
         moveTrayDown(animated: false, completionHandler: nil)
         albumCollection.backgroundColor = UIColor.clear
-        initialPinCheck()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        zoomMapToTarget()
         moveTrayUp()
         layoutSetter()
     }
@@ -36,9 +44,9 @@ class AlbumViewController: UIViewController {
     @IBAction func newAlbum(_ sender: UIButton) {}
     
     @IBAction func back(_ sender: Any) {
-        moveTrayDown( animated: true, completionHandler: {
-            TravelerCnst.imageCache.removeAllObjects()
-            self.navigationController?.popViewController(animated: true)})
+            moveTrayDown( animated: true, completionHandler: {
+                TravelerCnst.imageCache.removeAllObjects()
+                self.navigationController?.popViewController(animated: true)})
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -51,7 +59,7 @@ class AlbumViewController: UIViewController {
         let albumCell = collectionView.dequeueReusableCell(
             withReuseIdentifier: "AlbumCollectionCell",
             for: indexPath) as! AlbumCollectionCell
-        //Ste the cells corners to be rounded.
+        //Set the cells corners to be rounded.
         albumCell.layer.cornerRadius = 5
         //If the pin is empty then ste cell image from cache, otherwise use images in database.
         return selectedPin.isEmpty ?
@@ -82,9 +90,8 @@ class AlbumViewController: UIViewController {
 
 
 
-
-
-extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource{
+extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource, MKMapViewDelegate{
+    
     func layoutSetter(){
         let spaceSize: CGFloat = 9.0
         let width: CGFloat = albumCollection.frame.size.width
@@ -115,7 +122,8 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
      info with the associated location.
 */
     func initialPhotosFromWebAndBackgroundDBUpload(){
-        print("No Photo's found in DB for pin location")
+        print("No Photos found in DB for pin location")
+        backButton.isEnabled = false
         let lat = String(selectedPin.coordinate.latitude)
         let lon = String(selectedPin.coordinate.longitude)
         flickrClient.photosForLocation(latitude: lat, longitude: lon){ photoList, error in
@@ -156,8 +164,14 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
                             SendToDisplay.error(self,
                                                 errorType: "DataBase Error",
                                                 errorMessage: dbError.localizedDescription,
-                                                assignment: nil)
-                        };print("Successfully Saved photo to DB and loaded DBPhotoList with photo")
+                                                assignment: {self.back(self)})
+                        }
+                        self.dbFinishedUploading = (verifiedPhotoList.count == (index + 1))
+                        if self.dbFinishedUploading{DispatchQueue.main.async {
+                            self.backButton.isEnabled = true
+                            print("Successfully Saved photos to DB and loaded DBPhotoList with photos")
+                            }
+                        }
                     }
                 }
                 DispatchQueue.main.async {
@@ -171,6 +185,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
     
     func initialPhotosFromDB(){
         //If the Pin is not empty: Load up the dbTravelerPhotoList from the DataBase and use
+        dbFinishedUploading = true
         guard let locationID = selectedPin.uniqueIdentifier else{
             SendToDisplay.question(self,
                                    QTitle: "Pin Location Not Found",
@@ -234,6 +249,65 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         }
         return cell
     }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseId = "TravelerPin"
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
+        if pinView == nil {pinView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)}
+        else {pinView?.annotation = annotation}
+        
+        pinView?.image = UIImage(named:"TravelerPin")
+        pinView?.centerOffset.y = -20
+        pinView?.centerOffset.x = 4
+        return pinView
+    }
+    
+    //Use this method to acquire the zoom coordinates while the map is not visable yet (viewDidLoad).
+    func locateZoomTarget() -> CLLocationCoordinate2D{
+        //Save the original region so we can reset back to it
+        let originalRegion = albumLocationMap.region
+        //Zoom down to the selected location for the album
+        let zoomTo = MKCoordinateRegionMakeWithDistance(
+            selectedPin.coordinate,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize
+        )
+        albumLocationMap.setRegion(zoomTo, animated: false)
+        //Use the anchorView in the story board in order to determine a new point over the map
+        var aim = mapAnchoringView.center
+        aim.y -= mapAnchoringView.frame.height/4
+        //Convert the point from the anchorView into a coordinate on the map
+        let newCenter = albumLocationMap.convert(aim, toCoordinateFrom: albumLocationMap)
+        //Set up the region to zoom in with same pin location again but this time adjust the latitude by the difference in latitude between the original point and the one made by using the anchorView
+        var adjust = MKCoordinateRegionMakeWithDistance(
+            selectedPin.coordinate,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize
+        )
+        adjust.center.latitude -= (newCenter.latitude - selectedPin.coordinate.latitude)
+        //Store the adjusted coordinates
+        let targetedZoomPoint = adjust.center
+        //Set the map back to its original region settings
+        albumLocationMap.setRegion(originalRegion, animated: false)
+        //Return the stored adjusted coordinates
+        return targetedZoomPoint
+    }
+    
+    //Use this method to zoom the map on the target location (in viewDidAppear)
+    func zoomMapToTarget(){
+        //Acquire the zoom target to make the region we'll zoom in on
+        guard let zoomTarget = TravelerCnst.map.zoomTarget else{print("The zoom target was nil");return}
+        let zoomRegion = MKCoordinateRegionMakeWithDistance(
+            zoomTarget,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize
+        )
+        //Zoom onto the region
+        albumLocationMap.setRegion(zoomRegion, animated: true)
+        //Drop the pin onto the location we're viewing
+        albumLocationMap.addAnnotation(selectedPin)
+    }
+    
     
     
 }

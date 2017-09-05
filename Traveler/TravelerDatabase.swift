@@ -96,7 +96,7 @@ extension Traveler{
         //Exit out of method if a photo already exists in DB
         if photoFound != nil {print("Photo ID:\(photo.photoID) was found!");return nil}
         
-        print("No Photo was found. Continue to Save photo from web")
+        print("Photo: \(photo.photoID) not in DataBase. Uploading into DB...")
         //Otherwise, set up search for the associated Pin to add the photo to
         let requestPinToSavePhoto: NSFetchRequest<Pin> = Pin.fetchRequest()
         let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)

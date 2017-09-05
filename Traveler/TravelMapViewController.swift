@@ -20,8 +20,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     
     var deleteMode: Bool = false
-    //var selectedPinID: String!
-    //var selectedPinIsEmpty: Bool!
     var selectedPin: PinAnnotation!
     
     override func viewDidLoad() {super.viewDidLoad()
@@ -151,8 +149,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
 
     
 }
-
-
 
 
 

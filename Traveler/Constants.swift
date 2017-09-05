@@ -125,6 +125,12 @@ struct FlickrCnst {
 
 struct TravelerCnst {
     
+    struct map {
+        static let regionSize: CLLocationDistance = 8500
+        static var zoomTarget: CLLocationCoordinate2D!
+        private init(){}
+    }
+    
     //Use across the app for safe, transient image storage to enable smooth access from collection view.
     static let imageCache = NSCache<AnyObject, AnyObject>()
     
@@ -222,6 +228,7 @@ struct TravelerCnst {
         var gray: UIColor{get{return UIColor.darkGray}}
         private func decimal(_ rgbValue: Int) -> CGFloat{return CGFloat(rgbValue)/CGFloat(255)}
     }
+    private init(){}
 }
 
 //For use back and forth between the data base and the app
@@ -248,7 +255,7 @@ class TravelerPhoto{
         self.fullsizeData = fullsize
     }
     
-    
+
 }
 
 
