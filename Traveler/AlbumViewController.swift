@@ -18,6 +18,17 @@ class AlbumViewController: UIViewController {
     @IBOutlet weak var mapAnchoringView: UIView!
     @IBOutlet weak var collectionTray: UIView!
     @IBOutlet weak var backButton: UIButton!
+    @IBOutlet weak var newButton: UIButton!
+    
+    //Contained in Popup from here.............................................
+    @IBOutlet var fullView: UIView!
+    @IBOutlet weak var fullViewPhoto: UIImageView!
+    @IBOutlet weak var fvBlur: UIVisualEffectView!
+    @IBOutlet weak var fvGrayBackground: UIImageView!
+    @IBOutlet weak var fvBackButton: UIButton!
+    @IBOutlet weak var fvDeleteButton: UIButton!
+    @IBOutlet weak var fvSpinner: UIActivityIndicatorView!
+    //To here..................................................................
     
     var trayRemovalFlag = false
     var selectedPin: PinAnnotation!
@@ -27,6 +38,8 @@ class AlbumViewController: UIViewController {
 
     
     override func viewDidLoad() {super.viewDidLoad()
+        fvBlur?.effect = nil
+        //fvBlur.effect = UIBlurEffect(style: .extraLight)
         TravelerCnst.map.zoomTarget = locateZoomTarget()
         initialPinCheck()
         albumLocationMap.isUserInteractionEnabled = false
@@ -39,6 +52,57 @@ class AlbumViewController: UIViewController {
         zoomMapToTarget()
         moveTrayUp()
         layoutSetter()
+    }
+    
+    
+    func animateFullView(){
+        fullView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(fullView)
+        NSLayoutConstraint.activate([
+            fullView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
+            fullView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
+            fullView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 0),
+            fullView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 0),
+            fullView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
+            fullView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0)
+            ])
+        UIView.animate(withDuration: 0.3, animations: {
+            self.fvBlur.effect = UIBlurEffect(style: .regular)
+        }){completed in
+            UIView.animate(withDuration: 0.7, animations: {
+                self.fvGrayBackground.alpha = 1
+                self.fullViewPhoto.alpha = 1
+            }){completed in
+                self.fvSpinner.startAnimating()
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.fvBackButton.alpha = 1
+                    self.fvDeleteButton.alpha = 1
+                })
+            }
+        }
+    }
+    
+    
+    func animateRemoveFullView(){
+        UIView.animate(withDuration: 0.3, animations: {
+            self.fvSpinner.stopAnimating()
+            self.fvBackButton.alpha = 0
+            self.fvDeleteButton.alpha = 0
+            self.fullViewPhoto.alpha = 0
+            self.fvGrayBackground.alpha = 0
+            self.fvBlur.effect = nil
+        }, completion: {completion in
+            self.fullView.removeFromSuperview()
+        })
+    }
+    
+    
+    
+    @IBAction func fullViewBack(_ sender: Any) {
+        animateRemoveFullView()
+    }
+    
+    @IBAction func fullViewDelete(_ sender: Any) {
     }
     
     @IBAction func newAlbum(_ sender: UIButton) {}
@@ -69,6 +133,7 @@ class AlbumViewController: UIViewController {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected")
+        animateFullView()
         //let selectedCell = collectionView.cellForItem(at: indexPath) as! AlbumCollectionCell
     }
     
