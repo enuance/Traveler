@@ -16,14 +16,20 @@ class Traveler{
 
     private init(){}
     static let shared = Traveler()
+    
     let session = URLSession.shared
     //For DB Main Queue Use
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     //For getting background queue DB tasks
     let backgroundContext =
         (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
+    //For Appwide updates on DataBaseStatus
+    var dbStatus: DataBaseStatus = .Starting{
+        didSet{print("DB status has been changed from \(oldValue) to \(dbStatus)")}
+    }
     
     static func shouldShowIntroMessageIn(_ viewController: UIViewController){
+
         if UserDefaults.standard.bool(forKey: "isFirstAppLaunch"){
         SendToDisplay.error(viewController,
                             errorType: "Go Travel!",

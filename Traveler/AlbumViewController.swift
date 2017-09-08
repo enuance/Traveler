@@ -39,7 +39,7 @@ class AlbumViewController: UIViewController {
     
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
-        //fvBlur.effect = UIBlurEffect(style: .extraLight)
+        fullViewPhoto?.layer.cornerRadius = 5
         TravelerCnst.map.zoomTarget = locateZoomTarget()
         initialPinCheck()
         albumLocationMap.isUserInteractionEnabled = false
@@ -73,7 +73,7 @@ class AlbumViewController: UIViewController {
                 self.fvGrayBackground.alpha = 1
                 self.fullViewPhoto.alpha = 1
             }){completed in
-                self.fvSpinner.startAnimating()
+                //self.fvSpinner.startAnimating()
                 UIView.animate(withDuration: 0.3, animations: {
                     self.fvBackButton.alpha = 1
                     self.fvDeleteButton.alpha = 1
@@ -132,9 +132,62 @@ class AlbumViewController: UIViewController {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("Selected")
+        print("Selected Cell #\(indexPath.row)")
+        
+        let selectedPhotoID: String! = selectedPin.isEmpty ? downloadList[indexPath.row].photoID : dbTravelerPhotoList[indexPath.row]!.photoID
+        guard let photoID = selectedPhotoID else{print("UIError: Unable to access photo ID for selected Cell");return}
         animateFullView()
-        //let selectedCell = collectionView.cellForItem(at: indexPath) as! AlbumCollectionCell
+        fvSpinner.startAnimating()
+        let photoResult = Traveler.retrievePhotoFromDataBase(photoID: photoID)
+        if let error = photoResult.error{
+            SendToDisplay.error(self,
+                                errorType: "Database Error",
+                                errorMessage: error.localizedDescription,
+                                assignment: {self.animateRemoveFullView()}
+            )
+        }
+        
+        
+        if let dbPhoto = photoResult.photo{
+            fvSpinner.stopAnimating()
+            fullViewPhoto.image = dbPhoto.fullsizeImage
+        }
+        else{
+            let selectedURL = downloadList[indexPath.row].fullSize
+            
+            
+            flickrClient.getPhotoFor(url: selectedURL){ netPhoto, error in
+                guard error == nil else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error",
+                                        errorMessage: error!.localizedDescription,
+                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
+                    return
+                }
+                
+                guard let netPhoto = netPhoto else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error",
+                                        errorMessage: "Image returned nil from the network!",
+                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.fvSpinner.stopAnimating()
+                    self.fullViewPhoto.image = netPhoto
+                }
+                
+                
+            }
+            
+            
+            
+        }
+        
+        
+        
+
     }
     
     //Enables a cell to show that it is in the process of loading.
