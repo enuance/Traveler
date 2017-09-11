@@ -57,7 +57,18 @@ class AlbumViewController: UIViewController {
     
     @IBAction func fullViewDelete(_ sender: Any) {deletePhotoAndUpdateUI(selectedPhoto)}
     
-    @IBAction func newAlbum(_ sender: UIButton) {}
+    @IBAction func newAlbum(_ sender: UIButton) {fillMode == .new ? createNewAlbum() : refillAlbum()}
+    
+    
+    func createNewAlbum(){
+        
+        
+    }
+    
+    func refillAlbum(){
+        
+    }
+    
     
     @IBAction func back(_ sender: Any) {
             moveTrayDown( animated: true, completionHandler: {

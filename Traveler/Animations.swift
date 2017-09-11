@@ -22,16 +22,13 @@ extension TravelMapViewController{
                     y: pinView.frame.origin.y - self.view.frame.size.height,
                     width: pinView.frame.size.width,
                     height: pinView.frame.size.height)
-                
                 UIView.animate(
                     withDuration: 0.5, delay: 0,
                     usingSpringWithDamping: 0.5,
                     initialSpringVelocity: 2,
                     options: .curveLinear,
                     animations: ({pinView.frame = landingLocation}),
-                    completion: nil
-                )
-                
+                    completion: nil)
             }
         }
     }
@@ -46,21 +43,16 @@ extension TravelMapViewController{
     }
     
     func goToLocationAlbum(){
-        UIView.animate(
-            withDuration: 0.2,
-            animations: {
-                self.bottomTray.transform = CGAffineTransform(
-                    translationX: self.bottomTray.frame.origin.x,
-                    y: self.bottomTray.frame.height)
-        }, completion: {
-            completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)
-        })
+        UIView.animate(withDuration: 0.2, animations:
+            {self.bottomTray.transform = CGAffineTransform(
+                translationX: self.bottomTray.frame.origin.x,
+                y: self.bottomTray.frame.height)}, completion:
+            {completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)})
     }
     
     func showBottomTray(){
-        UIView.animate(withDuration: 0.4, animations: {
-            self.bottomTray.transform = .identity
-        })
+        UIView.animate(withDuration: 0.4, animations:
+            {self.bottomTray.transform = .identity})
     }
 }
 
@@ -83,9 +75,14 @@ extension AlbumViewController{
         if trayRemovalFlag{return}
         UIView.animate(withDuration: 0.5,
                        animations: {self.collectionTray.transform = .identity},
-                       completion: { completed in if self.trayRemovalFlag{
-                        self.moveTrayDown(animated: true, completionHandler: nil)
-                        }
+                       completion: {completed in if self.trayRemovalFlag{
+                        self.moveTrayDown(animated: true, completionHandler: nil)}})
+    }
+    
+    func animateTrayRefill(_ actionWhileTrayDown: (()->Void)?){
+        moveTrayDown(animated: true, completionHandler: {
+            if let action = actionWhileTrayDown{action()}
+            self.moveTrayUp()
         })
     }
     
@@ -105,11 +102,9 @@ extension AlbumViewController{
     func zoomMapToTarget(){
         //Acquire the zoom target to make the region we'll zoom in on
         guard let zoomTarget = TravelerCnst.map.zoomTarget else{print("The zoom target was nil");return}
-        let zoomRegion = MKCoordinateRegionMakeWithDistance(
-            zoomTarget,
+        let zoomRegion = MKCoordinateRegionMakeWithDistance( zoomTarget,
             TravelerCnst.map.regionSize,
-            TravelerCnst.map.regionSize
-        )
+            TravelerCnst.map.regionSize)
         //Zoom onto the region
         albumLocationMap.setRegion(zoomRegion, animated: true)
         //Drop the pin onto the location we're viewing
@@ -126,7 +121,6 @@ extension AlbumViewController{
                     y: pinView.frame.origin.y - self.view.frame.size.height,
                     width: pinView.frame.size.width,
                     height: pinView.frame.size.height)
-                
                 UIView.animate(
                     withDuration: 0.5, delay: 0,
                     usingSpringWithDamping: 0.5,
@@ -161,7 +155,7 @@ extension AlbumViewController{
             fullView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
             fullView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0)
             ])
-        UIView.animate(withDuration: 0.3, animations: {
+        UIView.animate(withDuration: 0.3, animations:{
             self.fvBlur.effect = UIBlurEffect(style: .regular)
         }){completed in
             UIView.animate(withDuration: 0.6, animations: {
