@@ -34,7 +34,9 @@ class AlbumViewController: UIViewController {
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var dbTravelerPhotoList = [Int : TravelerPhoto]()
     var dbFinishedUploading = false
-
+    var fillMode = FillMode.new
+    
+    
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
         fullViewPhoto?.layer.cornerRadius = 5
@@ -64,9 +66,9 @@ class AlbumViewController: UIViewController {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return selectedPin.isEmpty ?
-            downloadList.count :
-            dbTravelerPhotoList.count
+        let imageCount = selectedPin.isEmpty ? downloadList.count : dbTravelerPhotoList.count
+        changeButton(refill: (imageCount < FlickrCnst.Prefered.PhotosPerPage))
+        return imageCount
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -392,7 +394,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         return targetedZoomPoint
     }
     
-
+    
     
     
     

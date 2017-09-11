@@ -138,6 +138,18 @@ extension AlbumViewController{
         }
     }
     
+    
+    func changeButton(refill: Bool){
+        if refill{ if fillMode != .refill{
+            UIView.animate( withDuration: 0.5, animations:
+                {self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
+            fillMode = .refill}}
+        else{ if fillMode != .new{
+            UIView.animate(withDuration: 0.5, animations:
+                {self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
+            fillMode = .new}}
+    }
+    
     func animateFullView(){
         fullView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fullView)

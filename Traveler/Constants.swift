@@ -262,6 +262,12 @@ struct TravelerCnst {
     private init(){}
 }
 
+//For AlbumVC in animating the mode of the fill button
+enum FillMode{
+    case new
+    case refill
+}
+
 //For use back and forth between the data base and the app
 class TravelerPhoto{
     var thumbnailImage: UIImage!
