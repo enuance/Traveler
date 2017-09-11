@@ -188,13 +188,47 @@ extension Traveler{
         return (nil, DatabaseError.general(dbDescription: "The Unique ID for the location could not produce a photo album from the DataBase"))
     }
     
-    
-    
-    
-    
-    
-    
-    
+    //Done on the background context to avoid conflicts / Images are retrieved on the BG Context
+    static func deletePhotoFromDataBase(uniqueID: String) -> (success: Bool, error: DatabaseError?){
+        let requestPhotoToDelete: NSFetchRequest<Photo> = Photo.fetchRequest()
+        //Search criteia should bring the one Photo that has the Unique ID
+        let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
+        requestPhotoToDelete.predicate = searchCriteria
+        var photoToDelete: Photo! = nil
+        
+        do{photoToDelete = try Traveler.shared.backgroundContext.fetch(requestPhotoToDelete).first}
+        catch{return (false, DatabaseError.general(dbDescription: error.localizedDescription))}
+        
+        if let aPhotoToDelete = photoToDelete{
+            //Checking for unsaved changes prevents merge conflicts with other threads
+            if aPhotoToDelete.hasChanges{return (false, nil)}
+            Traveler.shared.backgroundContext.delete(aPhotoToDelete)
+            print("A Photo with ID \(uniqueID) has been deleted")
+            //Once it's deleted we need to save the context!
+            do{try Traveler.shared.backgroundContext.save()}
+            catch{return (false, DatabaseError.general(dbDescription: error.localizedDescription))}
+            //Reaching this point means we had a sucessful deletion of the photo
+            return (true, nil)}
+        //Reaching here means that no photo was found and therefore not deleted by this task.
+        else{return (false,nil)}
+    }
     
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

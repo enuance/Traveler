@@ -36,7 +36,6 @@ extension TravelMapViewController{
         }
     }
     
-    
     func animateMessage(show: Bool){
         switch show{
         case true: UIView.animate(withDuration: 0.5, animations:
@@ -90,6 +89,32 @@ extension AlbumViewController{
         })
     }
     
+    //Enables a cell to show that it is in the process of loading.
+    func loadingStatusFor(_ cell: AlbumCollectionCell, isLoading: Bool){
+        switch isLoading{
+        case true:
+            cell.backgroundColor = TravelerCnst.color.transparentTeal
+            cell.whiteSpinner.startAnimating()
+        case false:
+            cell.backgroundColor = UIColor.clear
+            cell.whiteSpinner.stopAnimating()
+        }
+    }
+    
+    //Use this method to zoom the map on the target location (in viewDidAppear)
+    func zoomMapToTarget(){
+        //Acquire the zoom target to make the region we'll zoom in on
+        guard let zoomTarget = TravelerCnst.map.zoomTarget else{print("The zoom target was nil");return}
+        let zoomRegion = MKCoordinateRegionMakeWithDistance(
+            zoomTarget,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize
+        )
+        //Zoom onto the region
+        albumLocationMap.setRegion(zoomRegion, animated: true)
+        //Drop the pin onto the location we're viewing
+        albumLocationMap.addAnnotation(selectedPin)
+    }
     
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         for pinView in views{
@@ -108,11 +133,48 @@ extension AlbumViewController{
                     initialSpringVelocity: 2,
                     options: .curveLinear,
                     animations: ({pinView.frame = landingLocation}),
-                    completion: nil
-                )
-                
+                    completion: nil)
             }
         }
+    }
+    
+    func animateFullView(){
+        fullView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(fullView)
+        NSLayoutConstraint.activate([
+            fullView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
+            fullView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
+            fullView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 0),
+            fullView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 0),
+            fullView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
+            fullView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0)
+            ])
+        UIView.animate(withDuration: 0.3, animations: {
+            self.fvBlur.effect = UIBlurEffect(style: .regular)
+        }){completed in
+            UIView.animate(withDuration: 0.6, animations: {
+                self.fvGrayBackground.alpha = 1
+                self.fullViewPhoto.alpha = 1
+            }){completed in
+                UIView.animate(withDuration: 0.1, animations: {
+                    self.fvBackButton.alpha = 1
+                    self.fvDeleteButton.alpha = 1
+                })
+            }
+        }
+    }
+    
+    func animateRemoveFullView(){
+        UIView.animate(withDuration: 0.3, animations: {
+            self.fvSpinner.stopAnimating()
+            self.fvBackButton.alpha = 0
+            self.fvDeleteButton.alpha = 0
+            self.fullViewPhoto.alpha = 0
+            self.fvGrayBackground.alpha = 0
+            self.fvBlur.effect = nil
+        }, completion: {completion in
+            self.fullView.removeFromSuperview()
+        })
     }
     
     

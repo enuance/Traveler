@@ -19,8 +19,7 @@ class AlbumViewController: UIViewController {
     @IBOutlet weak var collectionTray: UIView!
     @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var newButton: UIButton!
-    
-    //Contained in Popup from here.............................................
+    //The below outlets are contained in the fullView popup.............................................
     @IBOutlet var fullView: UIView!
     @IBOutlet weak var fullViewPhoto: UIImageView!
     @IBOutlet weak var fvBlur: UIVisualEffectView!
@@ -28,82 +27,33 @@ class AlbumViewController: UIViewController {
     @IBOutlet weak var fvBackButton: UIButton!
     @IBOutlet weak var fvDeleteButton: UIButton!
     @IBOutlet weak var fvSpinner: UIActivityIndicatorView!
-    //To here..................................................................
     
     var trayRemovalFlag = false
     var selectedPin: PinAnnotation!
+    var selectedPhoto: (index: IndexPath, id: String)!
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var dbTravelerPhotoList = [Int : TravelerPhoto]()
     var dbFinishedUploading = false
 
-    
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
         fullViewPhoto?.layer.cornerRadius = 5
         TravelerCnst.map.zoomTarget = locateZoomTarget()
         initialPinCheck()
-        albumLocationMap.isUserInteractionEnabled = false
+        albumLocationMap?.isUserInteractionEnabled = false
         moveTrayDown(animated: false, completionHandler: nil)
-        albumCollection.backgroundColor = UIColor.clear
+        albumCollection?.backgroundColor = UIColor.clear
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {super.viewDidAppear(animated)
         zoomMapToTarget()
         moveTrayUp()
         layoutSetter()
     }
     
+    @IBAction func fullViewBack(_ sender: Any) {animateRemoveFullView()}
     
-    func animateFullView(){
-        fullView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(fullView)
-        NSLayoutConstraint.activate([
-            fullView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
-            fullView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            fullView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 0),
-            fullView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 0),
-            fullView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
-            fullView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0)
-            ])
-        UIView.animate(withDuration: 0.3, animations: {
-            self.fvBlur.effect = UIBlurEffect(style: .regular)
-        }){completed in
-            UIView.animate(withDuration: 0.7, animations: {
-                self.fvGrayBackground.alpha = 1
-                self.fullViewPhoto.alpha = 1
-            }){completed in
-                //self.fvSpinner.startAnimating()
-                UIView.animate(withDuration: 0.3, animations: {
-                    self.fvBackButton.alpha = 1
-                    self.fvDeleteButton.alpha = 1
-                })
-            }
-        }
-    }
-    
-    
-    func animateRemoveFullView(){
-        UIView.animate(withDuration: 0.3, animations: {
-            self.fvSpinner.stopAnimating()
-            self.fvBackButton.alpha = 0
-            self.fvDeleteButton.alpha = 0
-            self.fullViewPhoto.alpha = 0
-            self.fvGrayBackground.alpha = 0
-            self.fvBlur.effect = nil
-        }, completion: {completion in
-            self.fullView.removeFromSuperview()
-        })
-    }
-    
-    
-    
-    @IBAction func fullViewBack(_ sender: Any) {
-        animateRemoveFullView()
-    }
-    
-    @IBAction func fullViewDelete(_ sender: Any) {
-    }
+    @IBAction func fullViewDelete(_ sender: Any) {deletePhotoAndUpdateUI(selectedPhoto)}
     
     @IBAction func newAlbum(_ sender: UIButton) {}
     
@@ -132,74 +82,7 @@ class AlbumViewController: UIViewController {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("Selected Cell #\(indexPath.row)")
-        
-        let selectedPhotoID: String! = selectedPin.isEmpty ? downloadList[indexPath.row].photoID : dbTravelerPhotoList[indexPath.row]!.photoID
-        guard let photoID = selectedPhotoID else{print("UIError: Unable to access photo ID for selected Cell");return}
-        animateFullView()
-        fvSpinner.startAnimating()
-        let photoResult = Traveler.retrievePhotoFromDataBase(photoID: photoID)
-        if let error = photoResult.error{
-            SendToDisplay.error(self,
-                                errorType: "Database Error",
-                                errorMessage: error.localizedDescription,
-                                assignment: {self.animateRemoveFullView()}
-            )
-        }
-        
-        
-        if let dbPhoto = photoResult.photo{
-            fvSpinner.stopAnimating()
-            fullViewPhoto.image = dbPhoto.fullsizeImage
-        }
-        else{
-            let selectedURL = downloadList[indexPath.row].fullSize
-            
-            
-            flickrClient.getPhotoFor(url: selectedURL){ netPhoto, error in
-                guard error == nil else{
-                    SendToDisplay.error(self,
-                                        errorType: "Network Error",
-                                        errorMessage: error!.localizedDescription,
-                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
-                    return
-                }
-                
-                guard let netPhoto = netPhoto else{
-                    SendToDisplay.error(self,
-                                        errorType: "Network Error",
-                                        errorMessage: "Image returned nil from the network!",
-                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    self.fvSpinner.stopAnimating()
-                    self.fullViewPhoto.image = netPhoto
-                }
-                
-                
-            }
-            
-            
-            
-        }
-        
-        
-        
-
-    }
-    
-    //Enables a cell to show that it is in the process of loading.
-    func loadingStatusFor(_ cell: AlbumCollectionCell, isLoading: Bool){
-        switch isLoading{
-        case true:
-            cell.backgroundColor = TravelerCnst.color.transparentTeal
-            cell.whiteSpinner.startAnimating()
-        case false:
-            cell.backgroundColor = UIColor.clear
-            cell.whiteSpinner.stopAnimating()
-        }
+        setFullImage(using: indexPath)
     }
     
 }
@@ -241,7 +124,8 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
 */
     func initialPhotosFromWebAndBackgroundDBUpload(){
         print("No Photos found in DB for pin location")
-        backButton.isEnabled = false
+        backButton?.isEnabled = false
+        //fvDeleteButton?.isEnabled = false
         let lat = String(selectedPin.coordinate.latitude)
         let lon = String(selectedPin.coordinate.longitude)
         flickrClient.photosForLocation(latitude: lat, longitude: lon){ photoList, error in
@@ -286,7 +170,8 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
                         }
                         self.dbFinishedUploading = (verifiedPhotoList.count == (index + 1))
                         if self.dbFinishedUploading{DispatchQueue.main.async {
-                            self.backButton.isEnabled = true
+                            self.backButton?.isEnabled = true
+                            //self.fvDeleteButton?.isEnabled = true
                             print("Successfully Saved photos to DB and loaded DBPhotoList with photos")
                             }
                         }
@@ -325,6 +210,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
     func updateFromDBList(_ cell: AlbumCollectionCell, using iPath: IndexPath) -> AlbumCollectionCell{
         //Set loading indicator
         loadingStatusFor(cell, isLoading: true)
+    
         guard let thumbnail = dbTravelerPhotoList[iPath.row]?.thumbnailImage else{
             SendToDisplay.error(self,
                                 errorType: "Database Error",
@@ -366,6 +252,101 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
             }
         }
         return cell
+    }
+    
+    func setFullImage(using iPath: IndexPath){
+        //Get the Photo ID
+        let theSelectedPhotoID: String! =
+            selectedPin.isEmpty ? downloadList[iPath.row].photoID:
+                dbTravelerPhotoList[iPath.row]?.photoID
+        
+        print("The pin is empty: \(selectedPin.isEmpty)")
+        
+        //Unwrap the PhotoID
+        guard let photoID = theSelectedPhotoID else{
+            SendToDisplay.error(self,
+                                errorType: "UI Error",
+                                errorMessage: GeneralError.UIConnection.localizedDescription,
+                                assignment: {self.animateRemoveFullView()})
+            return}
+        //Set the Class' selectedPhoto property for the rest of the VC to use
+        self.selectedPhoto = (iPath , photoID)
+        animateFullView()
+        fvSpinner.startAnimating()
+        //Request the selected photo and see what we get back from the DB.
+        let photoResult = Traveler.retrievePhotoFromDataBase(photoID: photoID)
+        if let error = photoResult.error{
+            SendToDisplay.error(self,
+                                errorType: "Database Error",
+                                errorMessage: error.localizedDescription,
+                                assignment: {self.animateRemoveFullView()})}
+        //If no error then unwrap the photo.
+        if let dbPhoto = photoResult.photo{
+            fvSpinner.stopAnimating()
+            //Set the full size image and stop the spinner.
+            fullViewPhoto.image = dbPhoto.fullsizeImage}
+            //If the photo doesn't exist in the DB, then pull from network
+        else{
+            print("The downloadlist count is \(downloadList.count)")
+            print("The indexer set is \(iPath.row)")
+            //If the pin is full, but the dbPhoto returned nil then ignore the selection.
+            //Indexing the downloadList, which would be empty if the pin is full, will cause 
+            //an index out of bounds exception.
+            if !selectedPin.isEmpty{
+                print("Caught the indexing exception!!!")
+                return}
+            
+            let selectedURL = downloadList[iPath.row].fullSize
+            flickrClient.getPhotoFor(url: selectedURL){ netPhoto, error in
+                guard error == nil else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error",
+                                        errorMessage: error!.localizedDescription,
+                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
+                    return}
+                //Unwrap the photo from the network.
+                guard let netPhoto = netPhoto else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error",
+                                        errorMessage: "Image returned nil from the network!",
+                                        assignment: {DispatchQueue.main.async {self.animateRemoveFullView()}})
+                    return}
+                //Go back to the main queue and set the full image with the retrieved photo
+                DispatchQueue.main.async {
+                    self.fvSpinner.stopAnimating()
+                    self.fullViewPhoto.image = netPhoto
+                }
+            }
+        }
+    }
+    
+    func deletePhotoAndUpdateUI(_ selectedPhoto: (index: IndexPath, id: String)?){
+        guard let selectedPhoto = selectedPhoto else{return}
+        let deletePhoto = Traveler.deletePhotoFromDataBase(uniqueID: selectedPhoto.id)
+        if let error = deletePhoto.error{
+            SendToDisplay.error(self,
+                                errorType: "Database Error",
+                                errorMessage: error.localizedDescription,
+                                assignment: nil)}
+        //Check if the deletion of the photo failed
+        if !deletePhoto.success{
+            SendToDisplay.question(self,
+                                   QTitle: "Deletion Failed!",
+                                   QMessage: "The Database was unable to locate the photo to delete. Would you like to try again?",
+                                   assignments: [
+                                    "Yes": {self.fullViewDelete(self)},
+                                    "No":{}])}
+            //If it was a success, then update the intermediate Data Sources and UI
+        else{
+            //Update the intermediate Data Sources
+            TravelerCnst.removeAndUpdate(&self.dbTravelerPhotoList, at: selectedPhoto.index.row)
+            TravelerCnst.removeAndUpdate(&TravelerCnst.imageCache, at: selectedPhoto.index.row)
+            if !self.downloadList.isEmpty{self.downloadList.remove(at: selectedPhoto.index.row)}
+            //Update the Collection view here!
+            self.albumCollection.deleteItems(at: [selectedPhoto.index])
+            self.animateRemoveFullView()
+        }
+        
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -411,20 +392,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         return targetedZoomPoint
     }
     
-    //Use this method to zoom the map on the target location (in viewDidAppear)
-    func zoomMapToTarget(){
-        //Acquire the zoom target to make the region we'll zoom in on
-        guard let zoomTarget = TravelerCnst.map.zoomTarget else{print("The zoom target was nil");return}
-        let zoomRegion = MKCoordinateRegionMakeWithDistance(
-            zoomTarget,
-            TravelerCnst.map.regionSize,
-            TravelerCnst.map.regionSize
-        )
-        //Zoom onto the region
-        albumLocationMap.setRegion(zoomRegion, animated: true)
-        //Drop the pin onto the location we're viewing
-        albumLocationMap.addAnnotation(selectedPin)
-    }
+
     
     
     

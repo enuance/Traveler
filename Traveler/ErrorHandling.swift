@@ -73,16 +73,19 @@ enum DatabaseError: LocalizedError{
     }
 }
 
-enum GeneralError: String{
-    case UIConnection = "User Interface ConnectionError"
-    case invalidURL = "Invalid URL"
+enum GeneralError: LocalizedError{
+    case UIConnection
+    case invalidURL
+    case UIEarlyAccess
     
-    var description: String{
+    var localizedDescription: String{
         switch self{
         case .UIConnection:
             return "This Interface did not get connected properly and is unable to complete the assigned task."
         case .invalidURL:
             return "You have attempted to open an invalid URL"
+        case .UIEarlyAccess:
+            return "You have selected the item faster than the data can be updated"
         }
     }
 }
@@ -91,6 +94,7 @@ enum GeneralError: String{
 //Allows a way to propogate Error Messages to the User throughout the app
 class SendToDisplay{
     class func error(_ displayer: UIViewController, errorType: String, errorMessage: String, assignment: (() -> Void)?) {
+        DispatchQueue.main.async {
         let errorColor = TravelerCnst.color.gold
         let errorTypeString = NSAttributedString(string: errorType, attributes: [
             NSFontAttributeName : UIFont(name: "Futura-Medium", size: CGFloat(24))!,
@@ -112,12 +116,14 @@ class SendToDisplay{
         alertContentView.layer.borderColor = errorColor.cgColor
         errorAlert.view.tintColor = errorColor
         displayer.present(errorAlert, animated: true, completion: nil)
+        }
     }
     
     //Allows a way to propogate Questions to the User and retrieve their Answers throughout the app. Something to keep in mind is that
     //the assignements parameter accepts a dictionary and so the responses/Answers to the user is displayed in a random order each time the method
     //is called.
     class func question(_ displayer: UIViewController, QTitle: String, QMessage: String, assignments Answers: [String : () -> (Void)]){
+        DispatchQueue.main.async {
         let QAColor = TravelerCnst.color.gold
         let QTitleString = NSAttributedString(string: QTitle, attributes: [
             NSFontAttributeName : UIFont(name: "Futura-Medium", size: CGFloat(24))!,
@@ -140,6 +146,7 @@ class SendToDisplay{
         alertContentView.layer.borderColor = QAColor.cgColor
         questionAlert.view.tintColor = QAColor
         displayer.present(questionAlert, animated: true, completion: nil)
+        }
     }
 }
 

@@ -23,6 +23,9 @@ class Traveler{
     //For getting background queue DB tasks
     let backgroundContext =
         (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
+    
+    
+    
     //For Appwide updates on DataBaseStatus
     var dbStatus: DataBaseStatus = .Starting{
         didSet{print("DB status has been changed from \(oldValue) to \(dbStatus)")}

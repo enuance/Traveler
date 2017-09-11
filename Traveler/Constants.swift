@@ -131,8 +131,39 @@ struct TravelerCnst {
         private init(){}
     }
     
+    //Use to remove and update values in Dictionaries that use indexes as keys
+    static func removeAndUpdate<Value>(_ indexedDict : inout [Int : Value], at removalIndex: Int){
+        var position: (lastPoint: Int, nextPoint: Int) = (removalIndex, removalIndex + 1)
+        guard indexedDict[removalIndex] != nil else{return}
+        indexedDict.removeValue(forKey: removalIndex)
+        
+        while position.lastPoint != position.nextPoint {
+            guard let foundValue = indexedDict[position.nextPoint] else{return}
+            indexedDict.removeValue(forKey: position.nextPoint)
+            indexedDict[position.lastPoint] = foundValue
+            position.lastPoint = position.nextPoint
+            position.nextPoint += 1
+        }
+    }
+    
+    //Use to remove and update values in Caches that use indexes as keys
+    static func removeAndUpdate(_ indexedCache: inout NSCache<AnyObject, AnyObject>, at removalIndex: Int){
+        var position: (lastPoint: Int, nextPoint: Int) = (removalIndex, removalIndex + 1)
+        func indexer(_ integer: Int) -> AnyObject{return integer as AnyObject}
+        guard indexedCache.object(forKey: indexer(removalIndex)) != nil else{return}
+        indexedCache.removeObject(forKey: indexer(removalIndex))
+        
+        while position.lastPoint != position.nextPoint{
+            guard let foundObject = indexedCache.object(forKey: indexer(position.nextPoint)) else{return}
+            indexedCache.removeObject(forKey: indexer(position.nextPoint))
+            indexedCache.setObject(foundObject, forKey: indexer(position.lastPoint))
+            position.lastPoint = position.nextPoint
+            position.nextPoint += 1
+        }
+    }
+    
     //Use across the app for safe, transient image storage to enable smooth access from collection view.
-    static let imageCache = NSCache<AnyObject, AnyObject>()
+    static var imageCache = NSCache<AnyObject, AnyObject>()
     
     //Use this method to create a random page number
     static func pageNoRand(_ pages: Int) -> Int{
