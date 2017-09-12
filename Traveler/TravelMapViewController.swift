@@ -146,7 +146,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-
+    deinit {print("The TravelerViewController has been deinitialized")}
     
 }
 

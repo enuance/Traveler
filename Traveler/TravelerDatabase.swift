@@ -9,13 +9,19 @@
 import UIKit
 import CoreData
 
-enum DataBaseStatus{
+enum DatabaseStatus{
     case Starting
     case Uploading(String)
     case Downloading(String)
     case Completed(String)
     case Cancelled(String)
-
+    
+    case UnsavedChanges
+    case PinNotFound
+    case PhotoNotFound
+    case PhotoSetNotFound
+    case SuccessfullDeletion
+    case TaskFailure
 }
 
 //DataBase Methods for Pins
@@ -187,6 +193,46 @@ extension Traveler{
         };shared.dbStatus = .Completed("Failed to download photos from DB")
         return (nil, DatabaseError.general(dbDescription: "The Unique ID for the location could not produce a photo album from the DataBase"))
     }
+    
+    
+    static func deleteAllPhotosFor(_ pinUniqueID: String, _ completionHandler: @escaping (_ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
+        let requestedLocationToClear: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let searchCriteria = NSPredicate(format: "uniqueID = %@", pinUniqueID)
+        requestedLocationToClear.predicate = searchCriteria
+        
+        var locationRetrieved: Pin! = nil
+        do{ locationRetrieved = try Traveler.shared.backgroundContext.fetch(requestedLocationToClear).first}
+        catch{ completionHandler(.TaskFailure , DatabaseError.general(dbDescription: error.localizedDescription));return}
+        
+        if let locationToClear = locationRetrieved{
+            if locationToClear.hasChanges{
+                print("The Album had unsaved changes")
+                completionHandler(.UnsavedChanges, nil); return}
+            let albumToDelete = locationToClear.albumPhotos
+            guard let albumPhotos = albumToDelete else {
+                print("The Photo set came back nil")
+                completionHandler(.PhotoSetNotFound, nil);return}
+            locationToClear.removeFromAlbumPhotos(albumPhotos)
+            do{ try Traveler.shared.backgroundContext.save()}
+            catch{ completionHandler(.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription));return}
+            
+            print("Database successfully deleted album!")
+            completionHandler(.SuccessfullDeletion, nil)
+        }
+        else{
+            print("The Location was unable to be found")
+            completionHandler(.PinNotFound, nil)}
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     //Done on the background context to avoid conflicts / Images are retrieved on the BG Context
     static func deletePhotoFromDataBase(uniqueID: String) -> (success: Bool, error: DatabaseError?){

@@ -27,7 +27,7 @@ class Traveler{
     
     
     //For Appwide updates on DataBaseStatus
-    var dbStatus: DataBaseStatus = .Starting{
+    var dbStatus: DatabaseStatus = .Starting{
         didSet{print("DB status has been changed from \(oldValue) to \(dbStatus)")}
     }
     

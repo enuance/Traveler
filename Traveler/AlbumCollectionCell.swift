@@ -14,11 +14,10 @@ class AlbumCollectionCell: UICollectionViewCell{
     @IBOutlet weak var whiteSpinner: UIActivityIndicatorView!
     var locationID: String!
     var photoID: String!
-    //var thumbnailToSet: UIImage!
     
-    
+    //Clears out the photo when downloading asyncronously from the Web.
     override func prepareForReuse() {super.prepareForReuse()
-        //cellThumbnail.image = TravelerCnst.createClearPlaceHolder()
+        cellThumbnail.image = TravelerCnst.createClearPlaceHolder()
     }
     
 }
