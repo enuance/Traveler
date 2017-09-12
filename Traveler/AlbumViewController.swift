@@ -79,6 +79,9 @@ class AlbumViewController: UIViewController {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let imageCount = selectedPin.isEmpty ? downloadList.count : dbTravelerPhotoList.count
         changeButton(refill: (imageCount < FlickrCnst.Prefered.PhotosPerPage))
+        print("Image Count: \(imageCount)")
+        print("Full Page is: \(FlickrCnst.Prefered.PhotosPerPage)")
+        print("The Change Button Boolean is: \(imageCount < FlickrCnst.Prefered.PhotosPerPage)")
         return imageCount
     }
     

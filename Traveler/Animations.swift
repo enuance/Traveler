@@ -134,14 +134,18 @@ extension AlbumViewController{
     
     
     func changeButton(refill: Bool){
-        if refill{ if fillMode != .refill{
-            UIView.animate( withDuration: 0.5, animations:
-                {self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
-            fillMode = .refill}}
-        else{ if fillMode != .new{
-            UIView.animate(withDuration: 0.5, animations:
-                {self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
-            fillMode = .new}}
+        if refill{
+            if fillMode != .refill{
+            UIView.animate( withDuration: 0.5, animations:{self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
+            fillMode = .refill
+            }
+        }
+        else{
+            if fillMode != .new{
+            UIView.animate(withDuration: 0.5, animations:{self.newButton?.setImage(UIImage(named: "World New"), for: .normal)})
+            fillMode = .new
+            }
+        }
     }
     
     func animateFullView(){
@@ -155,20 +159,24 @@ extension AlbumViewController{
             fullView.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0),
             fullView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0)
             ])
+        UIView.animate(withDuration: 0.7, delay: 0.3, options: .curveEaseIn, animations: {
+            self.fvBackButton.alpha = 1
+            self.fvDeleteButton.alpha = 1
+        }, completion: nil)
         UIView.animate(withDuration: 0.3, animations:{
             self.fvBlur.effect = UIBlurEffect(style: .regular)
         }){completed in
             UIView.animate(withDuration: 0.6, animations: {
                 self.fvGrayBackground.alpha = 1
                 self.fullViewPhoto.alpha = 1
-            }){completed in
-                UIView.animate(withDuration: 0.1, animations: {
-                    self.fvBackButton.alpha = 1
-                    self.fvDeleteButton.alpha = 1
-                })
-            }
+            })
         }
     }
+    
+    
+    
+    
+    
     
     func animateRemoveFullView(){
         UIView.animate(withDuration: 0.3, animations: {
