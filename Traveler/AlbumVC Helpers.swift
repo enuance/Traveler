@@ -384,9 +384,18 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         return targetedZoomPoint
     }
     
-    
-    
-    
-    
+    //Produces an exclusion list composed of Unique identifiers built from either the Web list or the database list
+    func photoExclusionsGen(emptyPin: Bool) -> [String]{
+        var exclusionList = [String]()
+        if emptyPin{if downloadList.count == 0{return exclusionList}
+            for download in downloadList{exclusionList.append(download.photoID)}
+            return exclusionList}
+        else{if dbTravelerPhotoList.count == 0{return exclusionList}
+            for (_, tPhoto) in dbTravelerPhotoList{ exclusionList.append(tPhoto.photoID)}
+            return exclusionList}
+    }
+
 }
+
+
 

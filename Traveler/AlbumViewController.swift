@@ -38,6 +38,9 @@ class AlbumViewController: UIViewController {
     var fillMode = FillMode.new
     
     
+
+    
+    
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
         fullViewPhoto?.layer.cornerRadius = 5
@@ -61,8 +64,48 @@ class AlbumViewController: UIViewController {
     @IBAction func newAlbum(_ sender: UIButton) {fillMode == .new ? createNewAlbum() : refillAlbum()}
     
     
+    
+    //This still needs work: Right now this only feeds the data source coming from the download list, which is only in use when the pin is first dropped. Need to check how to implement if refilling from a point where the data source is pulling from the Database (an established pin)!
+    
     func refillAlbum(){
+        let imageCount = selectedPin.isEmpty ? downloadList.count : dbTravelerPhotoList.count
+        let quota = FlickrCnst.Prefered.PhotosPerPage - imageCount
+        let exclusionList = photoExclusionsGen(emptyPin: selectedPin.isEmpty)
+        let lat = String(selectedPin.coordinate.latitude)
+        let lon = String(selectedPin.coordinate.longitude)
         
+        backButton.isEnabled = false
+        newButton.isEnabled = false
+        
+        flickrClient.photosForLocation(
+        withQuota: quota, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoList, error in
+            guard (error == nil) else{
+                SendToDisplay.error(self,
+                                    errorType: "Network Error",
+                                    errorMessage: "There was a network error in retreiving your photos for the location given: \(error!.localizedDescription)",
+                                    assignment: {
+                        self.backButton.isEnabled = true
+                        self.newButton.isEnabled = true})
+                return}
+            guard let verifiedPhotoList = photoList else{return}
+            if verifiedPhotoList.isEmpty{
+                self.trayRemovalFlag = true
+                SendToDisplay.question(self,
+                                       QTitle: "No Photos",
+                                       QMessage: "There were no photos found this time to add to your album",
+                                       assignments: ["Dismiss": {
+                                        self.backButton.isEnabled = true
+                                        self.newButton.isEnabled = true}])
+                return}
+            else{
+                self.backgroundFetchloopFromDB(verifiedPhotoList)
+                DispatchQueue.main.async {
+                    self.downloadList.append(contentsOf: verifiedPhotoList)
+                    print("\(verifiedPhotoList.count) added from flickr!")
+                    self.albumCollection.reloadData()
+                }
+            }
+        }
     }
     
     @IBAction func back(_ sender: Any) {

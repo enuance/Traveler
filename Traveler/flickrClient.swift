@@ -149,6 +149,10 @@ class flickrClient{
                 //Validate the expected photo dictionary as a dictionary
                 guard let photoDictionary = resultDictionary[FlickrCnst.ResponseKeys.Photo] as? [[String: Any]]
                     else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
+                //Check that expected photo count is the same as told by the Flickr API and less than quota.
+                guard photoIndexList.count == photoDictionary.count
+                    else{return completion(nil, NetworkError.differentObject(
+                        description: "Flickr API returned an unexpected amount of photos"))}
                 
                 var photosToReturn = [(thumbnail: URL, fullSize: URL, photoID: String)]()
                 var countToMeetQuota = 0
