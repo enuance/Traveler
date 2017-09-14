@@ -65,12 +65,17 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
                 return}
             else{
                 
-                self.backgroundFetchloopFromDB(verifiedPhotoList)
-                
                 if self.albumDeletionFlag{
                     //Enter any setup needed
                     print("Deletion Flag: Download List has been stopped from being set")
                     return
+                }
+                
+                
+                //self.backgroundUploadLoopToDB(verifiedPhotoList)
+                
+                self.ExperimentalBGLoop(verifiedPhotoList){ success in
+                    //Completed BGLoop task here
                 }
                 
                 
@@ -79,13 +84,19 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
                     print("\(self.downloadList.count) photos have been loaded from flickr!")
                     self.albumCollection.reloadData()
                 }
+                
+                
+                
+                
+                
+                
             }
         }
     }
     
     
     //Begins the background fetch loop for photos on the background context
-    func backgroundFetchloopFromDB(_ verifiedPhotoList: [(thumbnail: URL, fullSize: URL, photoID: String)]){
+    func backgroundUploadLoopToDB(_ verifiedPhotoList: [(thumbnail: URL, fullSize: URL, photoID: String)]){
         
         //Run Background DB Upload of verfiedPhotoList here:
         for (index, photo) in verifiedPhotoList.enumerated(){
@@ -108,14 +119,18 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
                                         errorMessage: "The photo was not able to be converted to a viewable format",
                                         assignment: {self.back(self)})
                     return}
+                
                 let retrievedPhoto = TravelerPhoto(thumbnail: thumbnail, fullsize: fullPhoto, photoID: photo.photoID)
+                
                 self.dbTravelerPhotoList[index] = retrievedPhoto
+                
                 if let dbError = Traveler.checkAndSave(retrievedPhoto, pinID: self.selectedPin.uniqueIdentifier!, concurrent: true){
                     SendToDisplay.error(self,
                                         errorType: "DataBase Error",
                                         errorMessage: dbError.localizedDescription,
                                         assignment: {self.back(self)})
-                }
+                    return}
+                
                 self.dbFinishedUploading = (verifiedPhotoList.count == (index + 1))
                 if self.dbFinishedUploading{DispatchQueue.main.async {
                     self.backButton?.isEnabled = true
@@ -127,6 +142,97 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
             }
         }
     }
+    
+    
+    
+    //Begins the background fetch loop for photos on the background context
+    func ExperimentalBGLoop(_ verifiedPhotoList: [(thumbnail: URL, fullSize: URL, photoID: String)], _ completionHandler: @escaping (_ success: Bool) -> Void){
+        let totalLoops = verifiedPhotoList.count
+        var currentLoop = 0
+        var onFinalLoop = false
+        //Run Background DB Upload of verfiedPhotoList here:
+        for (index, photo) in verifiedPhotoList.enumerated(){
+            
+            //Check in each iteration if a deletion of the album is requested.
+            if albumDeletionFlag{
+                //Enter any setup needed
+                print("Deletion Flag: Background DB loop has been Stopped")
+                completionHandler(false)
+                return
+            }
+            //Begin the loop off main thread
+            flickrClient.getPhotoFor(thumbnailURL: photo.thumbnail, fullSizeURL: photo.fullSize){ imageSet , error in
+                guard (error == nil) else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error While Retrieving Photo",
+                                        errorMessage: error!.localizedDescription,
+                                        assignment: {self.back(self)})
+                    completionHandler(false)
+                    return}
+                guard let imageSet = imageSet, let thumbnail = imageSet.thumbnail, let fullPhoto = imageSet.fullSize else{
+                    SendToDisplay.error(self,
+                                        errorType: "Network Error",
+                                        errorMessage: "The photo was not able to be converted to a viewable format",
+                                        assignment: {self.back(self)})
+                    completionHandler(false)
+                    return}
+                let retrievedPhoto = TravelerPhoto(thumbnail: thumbnail, fullsize: fullPhoto, photoID: photo.photoID)
+                
+                
+                
+                Traveler.ExperimentBGSave(retrievedPhoto, pinID: self.selectedPin.uniqueIdentifier!){
+                    status, error in
+                    //Placed here because it's the furthest completionHandler
+                    currentLoop += 1
+                    
+                    onFinalLoop = currentLoop == totalLoops
+                    //Check for errors
+                    guard (error == nil) else{
+                        SendToDisplay.error(self,
+                                            errorType: "Database Error",
+                                            errorMessage: error!.localizedDescription,
+                                            assignment: {self.back(self)})
+                        completionHandler(false)
+                        return}
+                    
+                    switch status{
+                    case .SuccessfullSave:
+                        print("Photo \(retrievedPhoto.photoID) was succesfully saved")
+                    case .PhotoAlreadyExists:
+                        print("Photo already exists in data base")
+                    default: print("There was a Database error")
+                    }
+                    
+
+                    
+                    
+                    
+                    print("On Loop #\(currentLoop) out of \(totalLoops)")
+                    print("Loop \(onFinalLoop ? "is" : "is not") finished")
+                    
+                    self.dbTravelerPhotoList[index] = retrievedPhoto
+                    self.dbFinishedUploading = onFinalLoop
+                    
+                    if self.dbFinishedUploading{DispatchQueue.main.async {
+                        self.backButton?.isEnabled = true
+                        self.newButton?.isEnabled = true
+                        print("Successfully Saved all photos to DB and loaded DBPhotoList with photos")
+                        completionHandler(true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+
+    
+    
+    
+
+    
+    
+    
     
     
     func initialPhotosFromDB(){

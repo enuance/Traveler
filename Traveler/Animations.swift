@@ -187,6 +187,7 @@ extension AlbumViewController{
             self.fvGrayBackground.alpha = 0
             self.fvBlur.effect = nil
         }, completion: {completion in
+            self.fullViewPhoto.image = nil
             self.fullView.removeFromSuperview()
         })
     }

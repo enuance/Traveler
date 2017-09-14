@@ -35,6 +35,7 @@ class AlbumViewController: UIViewController {
     var selectedPhoto: (index: IndexPath, id: String)!
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var dbTravelerPhotoList = [Int : TravelerPhoto]()
+    var refillList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var fillMode = FillMode.new
     
     
@@ -86,6 +87,7 @@ class AlbumViewController: UIViewController {
                                     assignment: {
                         self.backButton.isEnabled = true
                         self.newButton.isEnabled = true})
+                
                 return}
             guard let verifiedPhotoList = photoList else{return}
             if verifiedPhotoList.isEmpty{
@@ -98,12 +100,19 @@ class AlbumViewController: UIViewController {
                                         self.newButton.isEnabled = true}])
                 return}
             else{
-                self.backgroundFetchloopFromDB(verifiedPhotoList)
+                
+                
+                
+                
+                self.backgroundUploadLoopToDB(verifiedPhotoList)
                 DispatchQueue.main.async {
                     self.downloadList.append(contentsOf: verifiedPhotoList)
                     print("\(verifiedPhotoList.count) added from flickr!")
                     self.albumCollection.reloadData()
                 }
+                
+                
+                
             }
         }
     }
@@ -126,11 +135,13 @@ class AlbumViewController: UIViewController {
             for: indexPath) as! AlbumCollectionCell
         //Set the cells corners to be rounded.
         albumCell.layer.cornerRadius = 5
-        //If the pin is empty then ste cell image from cache, otherwise use images in database.
+        //If the pin is empty then set cell image from cache, otherwise use images in database.
         return selectedPin.isEmpty ?
             updateFromCache(albumCell, using: indexPath) :
             updateFromDBList(albumCell, using: indexPath)
     }
+    
+    
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         setFullImage(using: indexPath)

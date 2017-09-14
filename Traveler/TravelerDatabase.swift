@@ -19,8 +19,10 @@ enum DatabaseStatus{
     case UnsavedChanges
     case PinNotFound
     case PhotoNotFound
+    case PhotoAlreadyExists
     case PhotoSetNotFound
     case SuccessfullDeletion
+    case SuccessfullSave
     case TaskFailure
 }
 
@@ -137,6 +139,102 @@ extension Traveler{
         }
         return nil
     }
+    
+    
+    
+    
+    //Adds a photo to the DataBase using ----- the main or a concurrent queue --------
+    static func ExperimentBGSave(_ photo: TravelerPhoto, pinID uniqueID: String, _ completionHandler: @escaping (_ status: DatabaseStatus, _ error: DatabaseError? ) ->Void){
+        //Assign the chosen context for the DataBase Tasks
+        let assignedContext = Traveler.shared.backgroundContext
+        //Set up a search and the criteria for the photo in question
+        let checkForPhoto: NSFetchRequest<Photo> = Photo.fetchRequest()
+        let photoSearchCriteria = NSPredicate(format: "uniqueID = %@", photo.photoID)
+        checkForPhoto.predicate = photoSearchCriteria
+        //Conduct the search for the photo
+        var photoFound: Photo! = nil
+        do{ photoFound  = try assignedContext.fetch(checkForPhoto).first}
+        catch{
+            completionHandler(DatabaseStatus.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription))
+            return
+        }
+        //Exit out of method if a photo already exists in DB
+        if photoFound != nil {
+            completionHandler(DatabaseStatus.PhotoAlreadyExists, nil)
+            return
+        }
+        //Otherwise, set up search for the associated Pin to add the photo to
+        let requestPinToSavePhoto: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
+        requestPinToSavePhoto.predicate = searchCriteria
+        //Conduct the search for the Pin
+        var pinToSavePhoto: Pin! = nil
+        do{ pinToSavePhoto = try assignedContext.fetch(requestPinToSavePhoto).first}
+        catch{
+            completionHandler(DatabaseStatus.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription))
+            return
+        }
+        //Once Pin is located, create a DataBase Photo Entity to add to the located Pin
+        if let aPinToSavePhoto = pinToSavePhoto, let fullsizeData = photo.fullsizeData, let thumbnailData = photo.thumbnailData {
+            let photoToAdd = Photo(context: assignedContext)
+            photoToAdd.thumbnail = thumbnailData
+            photoToAdd.fullSize = fullsizeData
+            photoToAdd.uniqueID = photo.photoID
+            //Add the Data Photo to the assocaited Pin
+            aPinToSavePhoto.addToAlbumPhotos(photoToAdd)
+            //Save the DataBase Changes and exit the method.
+            do{try assignedContext.save()}
+            catch{
+                completionHandler(DatabaseStatus.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription))
+                return
+            }
+            //If we get here it means the save was successful
+            completionHandler(DatabaseStatus.SuccessfullSave, nil)
+            return // return statement not needed unless more is added
+        }else{
+            completionHandler(DatabaseStatus.PinNotFound, DatabaseError.associatedValueNotFound)
+            return
+        }
+
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
