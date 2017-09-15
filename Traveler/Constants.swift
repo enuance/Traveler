@@ -125,6 +125,8 @@ struct FlickrCnst {
 
 struct TravelerCnst {
     
+    static let clearPlaceholder: UIImage = createClearPlaceHolder()
+    
     struct map {
         static let regionSize: CLLocationDistance = 8500
         static var zoomTarget: CLLocationCoordinate2D!

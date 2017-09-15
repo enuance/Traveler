@@ -35,7 +35,6 @@ class AlbumViewController: UIViewController {
     var selectedPhoto: (index: IndexPath, id: String)!
     var downloadList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var dbTravelerPhotoList = [Int : TravelerPhoto]()
-    var refillList = [(thumbnail: URL, fullSize: URL, photoID: String)]()
     var fillMode = FillMode.new
     
     
@@ -101,18 +100,80 @@ class AlbumViewController: UIViewController {
                 return}
             else{
                 
+                //self.backgroundUploadLoopToDB(verifiedPhotoList)
+                
+                print("The selected Pin \(self.selectedPin.isEmpty ? "is empty":"is not empty")")
                 
                 
+                print("1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
                 
-                self.backgroundUploadLoopToDB(verifiedPhotoList)
-                DispatchQueue.main.async {
-                    self.downloadList.append(contentsOf: verifiedPhotoList)
-                    print("\(verifiedPhotoList.count) added from flickr!")
-                    self.albumCollection.reloadData()
+                
+                self.ExperimentalBGLoop(verifiedPhotoList){ success in
+                    //Once the photos have finished loading into the DB load them up into the CollectionView
+                    //But first check if we need to load up manually from this point.
+                    print("Has entered completion handler of experimental BG loop")
+                    if !self.selectedPin.isEmpty{
+                        
+                        
+                        ///need to implement a different version of this that inserts the downloaded photos in to the existing dbTravelerPhoto list and tells the collectionView to reload at that index.
+                        self.initialPhotosFromDB()
+                        
+                        
+                        
+                        self.albumCollection.reloadData()
+                        print("2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!2")
+                    }
                 }
                 
+                print("3!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!3")
                 
                 
+                //If the selected pin is not empty, then...
+                if !self.selectedPin.isEmpty{
+                    //Make sure the Download list is empty
+                    self.downloadList.removeAll()
+                    var indexForAddedPhoto = imageCount
+                    print("4!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!4")
+                    //Fill up the dbTravelerPhotoList with placeholders containing the actual photo ID's.
+                    for verifiedPhoto in verifiedPhotoList{
+                        //Create the placeholder
+                        let placeHoldingPhoto = TravelerPhoto(
+                                thumbnail: TravelerCnst.clearPlaceholder,
+                                fullsize: TravelerCnst.clearPlaceholder,
+                                photoID: verifiedPhoto.photoID)
+                        //Add the placeholder to the dbTravelerList for cell setter to detect.
+                        self.dbTravelerPhotoList[indexForAddedPhoto] = placeHoldingPhoto
+                        indexForAddedPhoto += 1
+                    }
+                    print("5!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!5")
+                    //fill up the download list with dummy items until the appropriate verified photolist can be entered
+                    for _ in 1...imageCount{
+                    self.downloadList.append(verifiedPhotoList.first!)
+                    }
+                    print("6!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!6")
+                    //Load up the verified photos list now that the list is filled to the right point
+                    self.downloadList.append(contentsOf: verifiedPhotoList)
+                    
+                    //At this point the dbTravelerPhotoList and the downloadList should have the same amount of items in it
+                    print("The dbTravelerPhoto list count is: \(self.dbTravelerPhotoList.count)")
+                    print("The downloadList count is: \(self.downloadList.count)")
+                    
+                    guard self.dbTravelerPhotoList.count == self.downloadList.count else{
+                        print("The lists are not the same and a horrible error can occur")
+                        return
+                    }
+                    print("7!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!7")
+                    DispatchQueue.main.async {
+                        self.albumCollection.reloadData()
+                        print("8!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!8")
+                    }
+                }else{
+                    DispatchQueue.main.async {
+                        self.downloadList.append(contentsOf: verifiedPhotoList)
+                        print("\(verifiedPhotoList.count) added from flickr!")
+                        self.albumCollection.reloadData()
+                    }
+                }
             }
         }
     }
