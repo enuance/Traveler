@@ -61,7 +61,7 @@ class flickrClient{
                 perPage: FlickrCnst.Prefered.PhotosPerPage)
             
             let pageNumber = String(photoInfo.pageNum)
-            let photoIndexList = photoInfo.listIndex
+            var photoIndexList = photoInfo.listIndex
             let domain = "photosForLocation(:_)"
             let parameters = FlickrCnst.methodParametersWith(latitude, longitude, pageNumber)
             let request = URLRequest(url: FlickrCnst.URLwith(parameters))
@@ -81,8 +81,16 @@ class flickrClient{
                 guard let resultDictionary = resultsObject[FlickrCnst.ResponseKeys.Photos] as? [String: Any]
                     else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
                 //Validate the expected photo dictionary as a dictionary
-                guard let photoDictionary = resultDictionary[FlickrCnst.ResponseKeys.Photo] as? [[String: Any]]
+                guard var photoDictionary = resultDictionary[FlickrCnst.ResponseKeys.Photo] as? [[String: Any]]
                     else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
+                
+                //If the Flickr API gave us an amount of photos less than stated, adjust the indexList to reflect the status
+                if photoDictionary.count < photoIndexList.count{
+                    photoIndexList = TravelerCnst.indexListRand(photoDictionary.count)}
+                //If there are more photos returned than stated, then remove the photos to reflect what was stated.
+                if photoDictionary.count > photoIndexList.count{
+                    while photoDictionary.count > photoIndexList.count{
+                        _ = photoDictionary.popLast()}}
                 //Check that the expected photo count is the same as told by the Flickr API.
                 guard photoIndexList.count == photoDictionary.count
                     else{return completion(nil, NetworkError.differentObject(
@@ -149,6 +157,11 @@ class flickrClient{
                 //Validate the expected photo dictionary as a dictionary
                 guard let photoDictionary = resultDictionary[FlickrCnst.ResponseKeys.Photo] as? [[String: Any]]
                     else{return completion(nil, NetworkError.invalidAPIPath(domain: domain))}
+                
+                
+                //Place and adjuster that retrieves more photos if less was returned than stated
+                // Also other adjuster
+                
                 //Check that expected photo count is the same as told by the Flickr API and less than quota.
                 guard photoIndexList.count == photoDictionary.count
                     else{return completion(nil, NetworkError.differentObject(

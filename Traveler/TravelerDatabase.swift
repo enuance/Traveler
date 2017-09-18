@@ -23,6 +23,7 @@ enum DatabaseStatus{
     case PhotoSetNotFound
     case SuccessfullDeletion
     case SuccessfullSave
+    case SuccessfullRetrieval
     case TaskFailure
 }
 
@@ -139,6 +140,53 @@ extension Traveler{
         }
         return nil
     }
+    
+    
+    
+    
+    //Operates in the Background Context. Brings back a specified list of photos from the database.
+    static func ExperimentalPhotoRetrieve(_ pinID: String, _ photoIDS: [String], _ completionHandler: @escaping (_ photos: [TravelerPhoto]?, _ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
+        //Assign the chosen context for the DataBase Tasks
+        let assignedContext = Traveler.shared.backgroundContext
+        //Set up a search and the criteria for the photo in question
+        let searchForPin: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let pinSearchCriteria = NSPredicate(format: "uniqueID = %@", pinID)
+        searchForPin.predicate = pinSearchCriteria
+        //Conduct the search for the photo
+        var pinFound: Pin! = nil
+        do{ pinFound  = try assignedContext.fetch(searchForPin).first}
+        catch{completionHandler(nil, DatabaseStatus.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription));return}
+        //Exit out of method if a photo already exists in DB
+        
+        guard let thePin = pinFound else{
+            completionHandler(nil, DatabaseStatus.PinNotFound, DatabaseError.general(dbDescription: "The Pin was not found in the Database"))
+            return
+        }
+        
+        guard let allPhotos = thePin.albumPhotos?.allObjects as? [Photo] else{
+            completionHandler(nil, DatabaseStatus.PhotoNotFound, DatabaseError.general(dbDescription: "The Photos were not found in the Database"))
+            return
+        }
+        
+        var travelerPhotos = [TravelerPhoto]()
+        
+        for picture in allPhotos{
+            guard let  pictureID = picture.uniqueID, let pictureThumbnail = picture.thumbnail, let pictureFullSize = picture.fullSize else{
+                completionHandler(nil, DatabaseStatus.PhotoNotFound, DatabaseError.general(dbDescription: "The Photo in the Database did not have an ID"))
+                return}
+            if photoIDS.contains(pictureID){
+                let pictureToAdd = TravelerPhoto(thumbnail: pictureThumbnail, fullsize: pictureFullSize, photoID: pictureID)
+                travelerPhotos.append(pictureToAdd)
+            }
+        }
+        guard travelerPhotos.count == photoIDS.count else{
+            completionHandler(nil, DatabaseStatus.PhotoNotFound, DatabaseError.general(dbDescription: "Some of the photos in the list were not found"))
+            return
+        }
+        completionHandler(travelerPhotos, DatabaseStatus.SuccessfullRetrieval, nil)
+    }
+    
+    
     
     
     

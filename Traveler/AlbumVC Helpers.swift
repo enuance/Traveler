@@ -330,6 +330,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         let thumbnailURL = downloadList[iPath.row].thumbnail
         //Check to see if image has been loaded to the cache, if so then set cell and exit method through return
         if let imageFromCache = TravelerCnst.imageCache.object(forKey: iPath.row as AnyObject) as? UIImage{
+            print("Setting image from cache!!!!!!!!!!!!!!!!!!!!!!!!...................XXXXXXXXXXXX")
             cell.cellThumbnail.image = imageFromCache
             loadingStatusFor(cell, isLoading: false)
             return cell}
