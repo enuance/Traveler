@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16G29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Photo" representedClassName="Photo" syncable="YES" codeGenerationType="class">
-        <attribute name="fullSize" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="thumbnail" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="uniqueID" attributeType="String" syncable="YES"/>
-        <relationship name="myLocation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="albumPhotos" inverseEntity="Pin" syncable="YES"/>
+        <attribute name="fullSize" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <relationship name="myFrame" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PhotoFrame" inverseName="myPhoto" inverseEntity="PhotoFrame" syncable="YES"/>
+    </entity>
+    <entity name="PhotoFrame" representedClassName="PhotoFrame" syncable="YES" codeGenerationType="class">
+        <attribute name="albumLocation" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="fullSizeURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uniqueID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="myLocation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="albumFrames" inverseEntity="Pin" syncable="YES"/>
+        <relationship name="myPhoto" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Photo" inverseName="myFrame" inverseEntity="Photo" syncable="YES"/>
     </entity>
     <entity name="Pin" representedClassName="Pin" syncable="YES" codeGenerationType="class">
         <attribute name="latitude" attributeType="Double" minValueString="-90" maxValueString="90" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="longitude" attributeType="Double" minValueString="-180" maxValueString="180" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="uniqueID" attributeType="String" syncable="YES"/>
-        <relationship name="albumPhotos" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Photo" inverseName="myLocation" inverseEntity="Photo" syncable="YES"/>
+        <relationship name="albumFrames" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PhotoFrame" inverseName="myLocation" inverseEntity="PhotoFrame" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Photo" positionX="-63" positionY="-18" width="128" height="105"/>
-        <element name="Pin" positionX="-326" positionY="-18" width="128" height="105"/>
+        <element name="Pin" positionX="-18" positionY="-0" width="128" height="105"/>
+        <element name="PhotoFrame" positionX="232" positionY="-18" width="128" height="135"/>
+        <element name="Photo" positionX="439" positionY="27" width="128" height="90"/>
     </elements>
 </model>

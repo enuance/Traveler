@@ -75,8 +75,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         guard let pinAnnotation = view.annotation as? PinAnnotation else{return}
         let uniqueID = pinAnnotation.uniqueIdentifier!
         print("pin \(uniqueID) Selected")
-        //selectedPinID = uniqueID
-        //selectedPinIsEmpty = pinAnnotation.isEmpty
         selectedPin = pinAnnotation
         if deleteMode{
             if let error = Traveler.deletePinFromDataBase(uniqueID: uniqueID){
@@ -93,8 +91,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         guard let identifier = segue.identifier else{return}
         if identifier == "ShowAlbumViewController"{
             if let AlbumVC = segue.destination as? AlbumViewController{
-                //AlbumVC.pinUniqueID = selectedPinID
-                //AlbumVC.needsAlbumDownload = selectedPinIsEmpty
                 AlbumVC.selectedPin = selectedPin
             }
         }

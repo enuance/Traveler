@@ -25,12 +25,6 @@ class Traveler{
         (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
     
     
-    
-    //For Appwide updates on DataBaseStatus
-    var dbStatus: DatabaseStatus = .Starting{
-        didSet{print("DB status has been changed from \(oldValue) to \(dbStatus)")}
-    }
-    
     static func shouldShowIntroMessageIn(_ viewController: UIViewController){
 
         if UserDefaults.standard.bool(forKey: "isFirstAppLaunch"){

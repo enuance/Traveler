@@ -19,6 +19,8 @@
 		205CEE5A1ECA244C008B32E5 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 205CEE591ECA244C008B32E5 /* MapKit.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		205CEE5C1ECA429E008B32E5 /* AlbumViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 205CEE5B1ECA429E008B32E5 /* AlbumViewController.swift */; };
 		206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206135711EC697B20071FF17 /* ErrorHandling.swift */; };
+		208BF8511F704B30001E8466 /* PinData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208BF8501F704B30001E8466 /* PinData.swift */; };
+		208BF8551F704BB9001E8466 /* AlbumData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 208BF8541F704BB9001E8466 /* AlbumData.swift */; };
 		20B2D9931ECA857A00C97A32 /* PinAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B2D9921ECA857A00C97A32 /* PinAnnotation.swift */; };
 		20BE4B5A1EC7DB9800EA57B0 /* TravelMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */; };
 		20C18A7D1ED358AB00251389 /* AlbumCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C18A7C1ED358AB00251389 /* AlbumCollectionCell.swift */; };
@@ -41,6 +43,8 @@
 		205CEE591ECA244C008B32E5 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		205CEE5B1ECA429E008B32E5 /* AlbumViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlbumViewController.swift; sourceTree = "<group>"; };
 		206135711EC697B20071FF17 /* ErrorHandling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorHandling.swift; sourceTree = "<group>"; };
+		208BF8501F704B30001E8466 /* PinData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinData.swift; sourceTree = "<group>"; };
+		208BF8541F704BB9001E8466 /* AlbumData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlbumData.swift; sourceTree = "<group>"; };
 		20B2D9921ECA857A00C97A32 /* PinAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinAnnotation.swift; sourceTree = "<group>"; };
 		20BE4B591EC7DB9800EA57B0 /* TravelMapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TravelMapViewController.swift; sourceTree = "<group>"; };
 		20C18A7C1ED358AB00251389 /* AlbumCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlbumCollectionCell.swift; sourceTree = "<group>"; };
@@ -97,6 +101,8 @@
 				200C7DF21EC531AB008C42C4 /* Constants.swift */,
 				20CCED5C1EC6915F00B2C77C /* TravelerSingleton.swift */,
 				201DEEA31F5A432300A506BA /* TravelerDatabase.swift */,
+				208BF8501F704B30001E8466 /* PinData.swift */,
+				208BF8541F704BB9001E8466 /* AlbumData.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -224,11 +230,13 @@
 				20C18A7D1ED358AB00251389 /* AlbumCollectionCell.swift in Sources */,
 				206135721EC697B20071FF17 /* ErrorHandling.swift in Sources */,
 				200C7DD81EC52A3D008C42C4 /* AppDelegate.swift in Sources */,
+				208BF8511F704B30001E8466 /* PinData.swift in Sources */,
 				205CEE5C1ECA429E008B32E5 /* AlbumViewController.swift in Sources */,
 				200C7DE01EC52A3D008C42C4 /* Traveler.xcdatamodeld in Sources */,
 				202D54EC1F689E1700468F74 /* AlbumVC Helpers.swift in Sources */,
 				20FB0A4D1ECBDF630080BABF /* Animations.swift in Sources */,
 				200C7DED1EC53078008C42C4 /* flickrClient.swift in Sources */,
+				208BF8551F704BB9001E8466 /* AlbumData.swift in Sources */,
 				20B2D9931ECA857A00C97A32 /* PinAnnotation.swift in Sources */,
 				20BE4B5A1EC7DB9800EA57B0 /* TravelMapViewController.swift in Sources */,
 				201DEEA41F5A432300A506BA /* TravelerDatabase.swift in Sources */,

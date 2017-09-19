@@ -225,7 +225,7 @@ struct TravelerCnst {
     static func convertToPinAnnotation(with DBPin: Pin) -> (pinAnnotation: PinAnnotation?, error: DatabaseError?){
         let coordinates = CLLocationCoordinate2DMake(DBPin.latitude, DBPin.longitude)
         guard let uniqueIdentifier = DBPin.uniqueID else{return (nil, DatabaseError.nonUniqueEntry)}
-        guard let photoCount = DBPin.albumPhotos?.count else {return (nil, DatabaseError.associatedValueNotFound)}
+        guard let photoCount = DBPin.albumFrames?.count else {return (nil, DatabaseError.associatedValueNotFound)}
         let dbPhotoIsEmpty = (photoCount == 0)
         let annotatedPin = PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier)
         annotatedPin.isEmpty = dbPhotoIsEmpty
@@ -297,7 +297,23 @@ class TravelerPhoto{
 
 }
 
-
+enum DatabaseStatus{
+    case Starting
+    case Uploading(String)
+    case Downloading(String)
+    case Completed(String)
+    case Cancelled(String)
+    
+    case UnsavedChanges
+    case PinNotFound
+    case PhotoNotFound
+    case PhotoAlreadyExists
+    case PhotoSetNotFound
+    case SuccessfullDeletion
+    case SuccessfullSave
+    case SuccessfullRetrieval
+    case TaskFailure
+}
 
 
 

@@ -9,24 +9,6 @@
 import UIKit
 import CoreData
 
-enum DatabaseStatus{
-    case Starting
-    case Uploading(String)
-    case Downloading(String)
-    case Completed(String)
-    case Cancelled(String)
-    
-    case UnsavedChanges
-    case PinNotFound
-    case PhotoNotFound
-    case PhotoAlreadyExists
-    case PhotoSetNotFound
-    case SuccessfullDeletion
-    case SuccessfullSave
-    case SuccessfullRetrieval
-    case TaskFailure
-}
-
 //DataBase Methods for Pins
 extension Traveler{
     
@@ -37,30 +19,33 @@ extension Traveler{
         pinToAdd.uniqueID = uniqueID
         pinToAdd.latitude = pin.coordinate.latitude
         pinToAdd.longitude = pin.coordinate.longitude
-        do{ shared.dbStatus = .Uploading("Pin to DB")
+        do{
             try Traveler.shared.context.save()}
-        catch{ shared.dbStatus = .Completed("Failed to Upload Pin")
+        catch{
             return DatabaseError.general(dbDescription: error.localizedDescription)}
-        shared.dbStatus = .Completed("Uploaded Pin to DB")
         return nil
     }
     
+    
+    //Marked For Deletion!!!
     //Retrieves Pins from the DataBase
     static func retrievePinsFromDataBase()-> (pins: [PinAnnotation]?, error: DatabaseError?){
         let requestForPins: NSFetchRequest<Pin> = Pin.fetchRequest()
-        do{ shared.dbStatus = .Downloading("Pins")
+        do{
             let returnedPins = try Traveler.shared.context.fetch(requestForPins)
             var returnedAnnotations = [PinAnnotation]()
             for pin in returnedPins{
                 let possiblePin = TravelerCnst.convertToPinAnnotation(with: pin)
                 guard let verifiedPin = possiblePin.pinAnnotation else{return (nil, DatabaseError.inconvertableObject(object: "PinAnnotation"))}
                 returnedAnnotations.append(verifiedPin)}
-            shared.dbStatus = .Completed("Downloading \(returnedAnnotations.count) Pins")
             return (returnedAnnotations, nil)}
-        catch{ shared.dbStatus = .Completed("Failed to Download Pins")
+        catch{
             return (nil, DatabaseError.general(dbDescription: error.localizedDescription))}
     }
     
+    
+    
+    //Marked For Deletion!!!
     static func deletePinFromDataBase(uniqueID: String) -> DatabaseError?{
         let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
         //Search criteia should bring the one Pin that has the Unique ID
@@ -294,9 +279,9 @@ extension Traveler{
         
         //Conduct the search for the photo
         var photoFound: Photo! = nil
-        do{shared.dbStatus = .Downloading("Photo from DB")
+        do{
             photoFound = try Traveler.shared.context.fetch(checkForPhoto).first}
-        catch{ shared.dbStatus = .Completed("Failed to Download Photo from DB")
+        catch{
             return (nil,DatabaseError.general(dbDescription: error.localizedDescription))}
         //If a photo was found, convert to an image and pass it along.
         if let photoFound = photoFound, let thumbnail = photoFound.thumbnail, let fullsize = photoFound.fullSize, let foundID = photoFound.uniqueID{
@@ -317,9 +302,9 @@ extension Traveler{
         let searchCriteria = NSPredicate(format: "uniqueID = %@", pinUniqueID)
         requestedPin.predicate = searchCriteria
         var pinToRetrieve: Pin! = nil
-        do{shared.dbStatus = .Downloading("Photos from Database")
+        do{
             pinToRetrieve = try assignedContext.fetch(requestedPin).first}
-        catch{shared.dbStatus = .Completed("Failed to download photos from DB")
+        catch{
             return (nil , DatabaseError.general(dbDescription: error.localizedDescription))}
         
         var travelerAlbum = [TravelerPhoto]()
@@ -334,9 +319,9 @@ extension Traveler{
                 }else{shared.dbStatus = .Completed("Failed to download photos from DB")
                     return(nil, DatabaseError.inconvertableObject(object: "Photo from pin location"))
                 }
-            };shared.dbStatus = .Completed("Downloading Photos from DB")
+            }
             return (travelerAlbum, nil)
-        };shared.dbStatus = .Completed("Failed to download photos from DB")
+        }
         return (nil, DatabaseError.general(dbDescription: "The Unique ID for the location could not produce a photo album from the DataBase"))
     }
     

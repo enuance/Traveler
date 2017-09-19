@@ -77,6 +77,7 @@ enum GeneralError: LocalizedError{
     case UIConnection
     case invalidURL
     case UIEarlyAccess
+    case PhotoSearchYieldedNoResults
     
     var localizedDescription: String{
         switch self{
@@ -86,6 +87,8 @@ enum GeneralError: LocalizedError{
             return "You have attempted to open an invalid URL"
         case .UIEarlyAccess:
             return "You have selected the item faster than the data can be updated"
+        case .PhotoSearchYieldedNoResults:
+            return "Our Search for photos at that location has yielded no results"
         }
     }
 }
