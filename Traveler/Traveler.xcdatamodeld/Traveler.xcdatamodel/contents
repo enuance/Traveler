@@ -21,7 +21,7 @@
     </entity>
     <elements>
         <element name="Pin" positionX="-18" positionY="-0" width="128" height="105"/>
-        <element name="PhotoFrame" positionX="232" positionY="-18" width="128" height="135"/>
+        <element name="PhotoFrame" positionX="216" positionY="-18" width="128" height="135"/>
         <element name="Photo" positionX="439" positionY="27" width="128" height="90"/>
     </elements>
 </model>

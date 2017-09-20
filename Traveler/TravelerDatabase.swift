@@ -9,9 +9,10 @@
 import UIKit
 import CoreData
 
+//Marked For Deletion!!!
 //DataBase Methods for Pins
 extension Traveler{
-    
+    //Marked For Deletion!!!
     //Adds a pin to the DataBase
     static func addToDatabase(_ pin: PinAnnotation) -> DatabaseError?{
         guard let uniqueID = pin.uniqueIdentifier else{return DatabaseError.nonUniqueEntry}
@@ -25,8 +26,6 @@ extension Traveler{
             return DatabaseError.general(dbDescription: error.localizedDescription)}
         return nil
     }
-    
-    
     //Marked For Deletion!!!
     //Retrieves Pins from the DataBase
     static func retrievePinsFromDataBase()-> (pins: [PinAnnotation]?, error: DatabaseError?){
@@ -42,9 +41,6 @@ extension Traveler{
         catch{
             return (nil, DatabaseError.general(dbDescription: error.localizedDescription))}
     }
-    
-    
-    
     //Marked For Deletion!!!
     static func deletePinFromDataBase(uniqueID: String) -> DatabaseError?{
         let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -64,8 +60,6 @@ extension Traveler{
         }
         return nil
     }
-    
-    
 }
 
 
@@ -77,58 +71,7 @@ extension Traveler{
 //DataBase Methods For Photos
 extension Traveler{
     
-    
-    //Adds a photo to the DataBase using ----- the main or a concurrent queue --------
-    static func checkAndSave(_ photo: TravelerPhoto, pinID uniqueID: String, concurrent: Bool) -> DatabaseError?{
-        //Assign the chosen context for the DataBase Tasks
-        let assignedContext = concurrent ? Traveler.shared.backgroundContext : Traveler.shared.context
-        
-        //Set up a search and the criteria for the photo in question
-        let checkForPhoto: NSFetchRequest<Photo> = Photo.fetchRequest()
-        let photoSearchCriteria = NSPredicate(format: "uniqueID = %@", photo.photoID)
-        checkForPhoto.predicate = photoSearchCriteria
-        
-        //Conduct the search for the photo
-        var photoFound: Photo! = nil
-        
-        do{ photoFound  = try assignedContext.fetch(checkForPhoto).first}
-        catch{return DatabaseError.general(dbDescription: error.localizedDescription)}
-        
-        //Exit out of method if a photo already exists in DB
-        if photoFound != nil {print("Photo ID:\(photo.photoID) was found!");return nil}
-        
-        print("Photo: \(photo.photoID) not in DataBase. Uploading into DB...")
-        //Otherwise, set up search for the associated Pin to add the photo to
-        let requestPinToSavePhoto: NSFetchRequest<Pin> = Pin.fetchRequest()
-        let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
-        requestPinToSavePhoto.predicate = searchCriteria
-        
-        //Conduct the search for the Pin
-        var pinToSavePhoto: Pin! = nil
-        
-        do{ pinToSavePhoto = try assignedContext.fetch(requestPinToSavePhoto).first}
-        catch{return DatabaseError.general(dbDescription: error.localizedDescription)}
-        
-        //Once Pin is located, create a DataBase Photo Entity to add to the located Pin
-        if let aPinToSavePhoto = pinToSavePhoto, let fullsizeData = photo.fullsizeData, let thumbnailData = photo.thumbnailData {
-            let photoToAdd = Photo(context: assignedContext)
-            photoToAdd.thumbnail = thumbnailData
-            photoToAdd.fullSize = fullsizeData
-            photoToAdd.uniqueID = photo.photoID
-            
-            //Add the Data Photo to the assocaited Pin
-            aPinToSavePhoto.addToAlbumPhotos(photoToAdd)
-            
-            //Save the DataBase Changes and exit the method.
-            do{try assignedContext.save()}
-            catch{return DatabaseError.general(dbDescription: error.localizedDescription)}
-        }
-        return nil
-    }
-    
-    
-    
-    
+
     //Operates in the Background Context. Brings back a specified list of photos from the database.
     static func ExperimentalPhotoRetrieve(_ pinID: String, _ photoIDS: [String], _ completionHandler: @escaping (_ photos: [TravelerPhoto]?, _ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
         //Assign the chosen context for the DataBase Tasks
@@ -170,9 +113,6 @@ extension Traveler{
         }
         completionHandler(travelerPhotos, DatabaseStatus.SuccessfullRetrieval, nil)
     }
-    
-    
-    
     
     
     
