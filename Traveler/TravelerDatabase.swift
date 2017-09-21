@@ -9,6 +9,7 @@
 import UIKit
 import CoreData
 
+/*
 //Marked For Deletion!!!
 //DataBase Methods for Pins
 extension Traveler{
@@ -63,15 +64,15 @@ extension Traveler{
 }
 
 
-
+*/
 
 
 
 
 //DataBase Methods For Photos
 extension Traveler{
-    
-
+/*
+    //Marked for deletion!!!
     //Operates in the Background Context. Brings back a specified list of photos from the database.
     static func ExperimentalPhotoRetrieve(_ pinID: String, _ photoIDS: [String], _ completionHandler: @escaping (_ photos: [TravelerPhoto]?, _ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
         //Assign the chosen context for the DataBase Tasks
@@ -85,19 +86,15 @@ extension Traveler{
         do{ pinFound  = try assignedContext.fetch(searchForPin).first}
         catch{completionHandler(nil, DatabaseStatus.TaskFailure, DatabaseError.general(dbDescription: error.localizedDescription));return}
         //Exit out of method if a photo already exists in DB
-        
         guard let thePin = pinFound else{
             completionHandler(nil, DatabaseStatus.PinNotFound, DatabaseError.general(dbDescription: "The Pin was not found in the Database"))
             return
         }
-        
         guard let allPhotos = thePin.albumPhotos?.allObjects as? [Photo] else{
             completionHandler(nil, DatabaseStatus.PhotoNotFound, DatabaseError.general(dbDescription: "The Photos were not found in the Database"))
             return
         }
-        
         var travelerPhotos = [TravelerPhoto]()
-        
         for picture in allPhotos{
             guard let  pictureID = picture.uniqueID, let pictureThumbnail = picture.thumbnail, let pictureFullSize = picture.fullSize else{
                 completionHandler(nil, DatabaseStatus.PhotoNotFound, DatabaseError.general(dbDescription: "The Photo in the Database did not have an ID"))
@@ -114,8 +111,7 @@ extension Traveler{
         completionHandler(travelerPhotos, DatabaseStatus.SuccessfullRetrieval, nil)
     }
     
-    
-    
+    //Marked for deletion!!!
     //Adds a photo to the DataBase using ----- the main or a concurrent queue --------
     static func ExperimentBGSave(_ photo: TravelerPhoto, pinID uniqueID: String, _ completionHandler: @escaping (_ status: DatabaseStatus, _ error: DatabaseError? ) ->Void){
         //Assign the chosen context for the DataBase Tasks
@@ -168,55 +164,14 @@ extension Traveler{
             completionHandler(DatabaseStatus.PinNotFound, DatabaseError.associatedValueNotFound)
             return
         }
-
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    //Marked for deletion!!!
     static func retrievePhotoFromDataBase(photoID: String)-> (photo: TravelerPhoto?, error: DatabaseError?){
         //Set up a search and the criteria for the photo in question
         let checkForPhoto: NSFetchRequest<Photo> = Photo.fetchRequest()
         let photoSearchCriteria = NSPredicate(format: "uniqueID = %@", photoID)
         checkForPhoto.predicate = photoSearchCriteria
-        
         //Conduct the search for the photo
         var photoFound: Photo! = nil
         do{
@@ -233,10 +188,10 @@ extension Traveler{
         return (nil, nil)
     }
     
+    //Marked for deletion!!!
     //Retrieve Photos from the data base
     static func retrievePhotosFromDataBase(pinUniqueID: String, concurrent: Bool)-> (photos: [TravelerPhoto]?, error: DatabaseError?){
         let assignedContext = concurrent ? Traveler.shared.backgroundContext : Traveler.shared.context
-        
         let requestedPin: NSFetchRequest<Pin> = Pin.fetchRequest()
         //Search criteia should bring the one Pin that has the Unique ID
         let searchCriteria = NSPredicate(format: "uniqueID = %@", pinUniqueID)
@@ -246,9 +201,7 @@ extension Traveler{
             pinToRetrieve = try assignedContext.fetch(requestedPin).first}
         catch{
             return (nil , DatabaseError.general(dbDescription: error.localizedDescription))}
-        
         var travelerAlbum = [TravelerPhoto]()
-        
         if let pinFound = pinToRetrieve,
             let unknownAlbum = pinFound.albumPhotos?.allObjects,
             let photoAlbum = unknownAlbum as? [Photo]{
@@ -265,7 +218,7 @@ extension Traveler{
         return (nil, DatabaseError.general(dbDescription: "The Unique ID for the location could not produce a photo album from the DataBase"))
     }
     
-    
+    //Marked for deletion!!!
     static func deleteAllPhotosFor(_ pinUniqueID: String, _ completionHandler: @escaping (_ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
         let requestedLocationToClear: NSFetchRequest<Pin> = Pin.fetchRequest()
         let searchCriteria = NSPredicate(format: "uniqueID = %@", pinUniqueID)
@@ -294,15 +247,7 @@ extension Traveler{
             print("The Location was unable to be found")
             completionHandler(.PinNotFound, nil)}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+*/
     
     
     //Done on the background context to avoid conflicts / Images are retrieved on the BG Context
