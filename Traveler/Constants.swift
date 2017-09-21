@@ -133,6 +133,7 @@ struct TravelerCnst {
         private init(){}
     }
     
+    
     //Use to remove and update values in Dictionaries that use indexes as keys
     static func removeAndUpdate<Value>(_ indexedDict : inout [Int : Value], at removalIndex: Int){
         var position: (lastPoint: Int, nextPoint: Int) = (removalIndex, removalIndex + 1)

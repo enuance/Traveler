@@ -92,9 +92,27 @@ class AlbumData{
         }
     }
     
-    
-    func requestDeletePhotoFor(_ albumLocation: Int){
-        
+    func requestDeletePhotoFor(_ albumLocation: Int, completion: @escaping(_ error: LocalizedError?)->Void){
+        //Enter into the background serial queue for this task
+        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+            //Check that this object still exists otherwise ignore the call to the method
+            guard let albumID = self?.albumPin.uniqueID else{return}
+            //Set the search criteria for Photo frames that are = to or > than the frame's location within the Album and matches the Album ID.
+            let searchForPhotoFrames: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
+            let searchCriteria = NSPredicate(format: "albumLocation >= %@ AND myLocation.uniqueID = %@", Int16(albumLocation), albumID)
+            let sortByLocation = NSSortDescriptor(key: "albumLocation", ascending: true)
+            searchForPhotoFrames.predicate = searchCriteria
+            searchForPhotoFrames.sortDescriptors = [sortByLocation]
+            
+            var framesToUpdate: [PhotoFrame]?
+            
+            do{framesToUpdate = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrames)}
+            catch{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))};return}
+            
+            //Left off here
+            
+            
+        }
     }
     
     

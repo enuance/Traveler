@@ -5,11 +5,11 @@
 //  Created by Stephen Martinez on 9/1/17.
 //  Copyright © 2017 Stephen Martinez. All rights reserved.
 //
-
+/*
 import UIKit
 import CoreData
 
-/*
+
 //Marked For Deletion!!!
 //DataBase Methods for Pins
 extension Traveler{
@@ -64,14 +64,14 @@ extension Traveler{
 }
 
 
-*/
+
 
 
 
 
 //DataBase Methods For Photos
 extension Traveler{
-/*
+
     //Marked for deletion!!!
     //Operates in the Background Context. Brings back a specified list of photos from the database.
     static func ExperimentalPhotoRetrieve(_ pinID: String, _ photoIDS: [String], _ completionHandler: @escaping (_ photos: [TravelerPhoto]?, _ status: DatabaseStatus, _ error: DatabaseError?) -> Void){
@@ -247,9 +247,9 @@ extension Traveler{
             print("The Location was unable to be found")
             completionHandler(.PinNotFound, nil)}
     }
-*/
+
     
-    
+    //Marked for Deletion!!!
     //Done on the background context to avoid conflicts / Images are retrieved on the BG Context
     static func deletePhotoFromDataBase(uniqueID: String) -> (success: Bool, error: DatabaseError?){
         let requestPhotoToDelete: NSFetchRequest<Photo> = Photo.fetchRequest()
@@ -280,7 +280,7 @@ extension Traveler{
 
 
 
-
+*/
 
 
 
