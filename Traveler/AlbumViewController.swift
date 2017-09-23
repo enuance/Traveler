@@ -81,7 +81,7 @@ class AlbumViewController: UIViewController {
         let albumCell = collectionView.dequeueReusableCell(withReuseIdentifier: "AlbumCollectionCell",for: indexPath) as! AlbumCollectionCell
         albumCell.layer.cornerRadius = 5
         loadingStatusFor(albumCell, isLoading: true)
-        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
             guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
             self?.loadingStatusFor(albumCell, isLoading: false)
@@ -96,7 +96,7 @@ class AlbumViewController: UIViewController {
         self.selectedPhoto = (indexPath.row)
         animateFullView()
         fvSpinner.startAnimating()
-        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
             guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
             self?.fvSpinner.stopAnimating()
