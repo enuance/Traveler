@@ -33,7 +33,7 @@ class AlbumViewController: UIViewController {
     
     var selectedPin: PinAnnotation!
     var albumData: AlbumData!
-    var selectedPhoto: (index: IndexPath, id: String)!
+    var selectedPhoto: Int!
     
     
     var fillMode = FillMode.new
@@ -79,24 +79,30 @@ class AlbumViewController: UIViewController {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let albumCell = collectionView.dequeueReusableCell(withReuseIdentifier: "AlbumCollectionCell",for: indexPath) as! AlbumCollectionCell
-        //Set the cells corners to be rounded.
         albumCell.layer.cornerRadius = 5
-        //If the pin is empty then set cell image from cache, otherwise use images in database.
         loadingStatusFor(albumCell, isLoading: true)
-        albumData.requestPhotoFor(indexPath.row){ albumPhoto, error in
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
             guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
-            self.loadingStatusFor(albumCell, isLoading: false)
+            self?.loadingStatusFor(albumCell, isLoading: false)
             albumCell.cellThumbnail.image = albumPhoto.thumbnailImage
-            
-            //collectionView.reloadItems(at: [indexPath])
         }
         return albumCell
     }
     
     
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {}
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        self.selectedPhoto = (indexPath.row)
+        animateFullView()
+        fvSpinner.startAnimating()
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
+            guard error == nil else{print("Errrrorrr!!!!"); return}
+            guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
+            self?.fvSpinner.stopAnimating()
+            self?.fullViewPhoto.image = albumPhoto.fullsizeImage
+        }
+    }
  
     
     deinit{print("The AlbumViewController Has been deinitialized!")}
