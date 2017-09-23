@@ -165,9 +165,6 @@ struct TravelerCnst {
         }
     }
     
-    //Use across the app for safe, transient image storage to enable smooth access from collection view.
-    static var imageCache = NSCache<AnyObject, AnyObject>()
-    
     //Use this method to create a random page number
     static func pageNoRand(_ pages: Int) -> Int{
         let firstTry = pages == 0 ? 0 : Int(arc4random_uniform(UInt32(pages))) + 1
@@ -226,10 +223,7 @@ struct TravelerCnst {
     static func convertToPinAnnotation(with DBPin: Pin) -> (pinAnnotation: PinAnnotation?, error: DatabaseError?){
         let coordinates = CLLocationCoordinate2DMake(DBPin.latitude, DBPin.longitude)
         guard let uniqueIdentifier = DBPin.uniqueID else{return (nil, DatabaseError.nonUniqueEntry)}
-        guard let photoCount = DBPin.albumFrames?.count else {return (nil, DatabaseError.associatedValueNotFound)}
-        let dbPhotoIsEmpty = (photoCount == 0)
         let annotatedPin = PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier)
-        annotatedPin.isEmpty = dbPhotoIsEmpty
         return (annotatedPin, nil)
     }
     

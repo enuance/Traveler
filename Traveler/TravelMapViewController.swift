@@ -18,7 +18,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var leftMessage: UILabel!
     @IBOutlet weak var bottomTray: UIView!
     
-    
     var deleteMode: Bool = false
     var selectedPin: PinAnnotation!
     
@@ -29,8 +28,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
 
     override func viewWillAppear(_ animated: Bool) { super.viewWillAppear(animated)}
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {super.viewDidAppear(animated)
         addDataBasePins(to: mapView)
         showBottomTray()
     }
@@ -44,7 +42,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
         if pinView == nil {pinView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)}
         else {pinView?.annotation = annotation}
-        
         pinView?.image = UIImage(named:"TravelerPin")
         pinView?.centerOffset.y = -20
         pinView?.centerOffset.x = 4
@@ -52,16 +49,17 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     func addDataBasePins(to map: MKMapView){
-        let pins = Traveler.retrievePinsFromDataBase()
-        guard pins.error == nil else{
-            SendToDisplay.error(self,
-                                errorType: "DataBase Error",
-                                errorMessage: pins.error!.localizedDescription,
-                                assignment: nil);return
+        PinData.requestAllPins(){ pinList, error in
+            guard error == nil else{
+                SendToDisplay.error( self,
+                                     errorType: "Database Error",
+                                     errorMessage: error!.localizedDescription,
+                                     assignment: nil)
+                return}
+            guard let pinList = pinList else{print("No Pins to add to map") ;return}
+            map.addAnnotations(pinList)
+            print("Added \(pinList.count) Pins to Map")
         }
-        guard let pinsList = pins.pins else{print("No pins to add to map");return}
-        map.addAnnotations(pinsList)
-        print("Added Pins to Map")
     }
     
     func setupTouchSenitivity(){
@@ -73,25 +71,35 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard let pinAnnotation = view.annotation as? PinAnnotation else{return}
-        let uniqueID = pinAnnotation.uniqueIdentifier!
+        let uniqueID = pinAnnotation.uniqueIdentifier
         print("pin \(uniqueID) Selected")
+        guard pinAnnotation.isSelectable == true else{
+            SendToDisplay.error(self,
+                                errorType: "Pin is not accessible yet",
+                                errorMessage: DatabaseError.operationInProgress.localizedDescription,
+                                assignment: nil)
+            return}
         selectedPin = pinAnnotation
-        if deleteMode{
-            if let error = Traveler.deletePinFromDataBase(uniqueID: uniqueID){
+        if deleteMode{ PinData.requestPinDeletion(uniqueID){ error in
+            guard error == nil else{
                 SendToDisplay.error(self,
                                     errorType: "DataBase Error",
-                                    errorMessage: error.localizedDescription,
+                                    errorMessage: error!.localizedDescription,
                                     assignment: nil)
-            };mapView.removeAnnotation(view.annotation!)
-            switchDeleteMode()}
+                return}
+            mapView.removeAnnotation(view.annotation!)
+            self.switchDeleteMode()}}
         else{goToLocationAlbum()}
     }
+    
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {super.prepare(for: segue, sender: sender)
         guard let identifier = segue.identifier else{return}
         if identifier == "ShowAlbumViewController"{
             if let AlbumVC = segue.destination as? AlbumViewController{
+                guard let theAlbumData = AlbumData(pinID: selectedPin.uniqueIdentifier) else{print("Couldnt Initialize AlbumData!!!");return}
                 AlbumVC.selectedPin = selectedPin
+                AlbumVC.albumData = theAlbumData
             }
         }
     }
@@ -123,14 +131,31 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         let selectedPoint = mapView.convert(touch, toCoordinateFrom: mapView)
         let uniqueID = UUID().uuidString
         let annotation = PinAnnotation(coordinate: selectedPoint, uniqueIdentifier: uniqueID)
-        if let error = Traveler.addToDatabase(annotation){
-            SendToDisplay.error(self,
-                                errorType: "DataBase Error",
-                                errorMessage: error.localizedDescription,
-                                assignment: nil)
-        }
+        annotation.isSelectable = false
         mapView.addAnnotation(annotation)
-        print("pinAdded!")
+        PinData.requestPinSave(annotation){error in
+            guard error == nil else{ switch error!{
+            case let gError as GeneralError:
+                SendToDisplay.error(self,
+                                    errorType: "No Photos Found",
+                                    errorMessage: gError.localizedDescription,
+                                    assignment: {self.mapView.removeAnnotation(annotation)})
+            case let dbError as DatabaseError:
+                SendToDisplay.error(self,
+                                    errorType: "Database Error",
+                                    errorMessage: dbError.localizedDescription,
+                                    assignment: {/*May Need to enter some clean up code here*/})
+            case let netError as NetworkError:
+                SendToDisplay.error(self,
+                                    errorType: "Network Error",
+                                    errorMessage: netError.localizedDescription,
+                                    assignment: {/*May Need to enter some clean up code here*/})
+            default: print("Error is not an expected one in addTravelerPin(:_)")}
+                return
+            }
+            print("Pin successfully Framed and Saved!")
+            annotation.isSelectable = true
+        }
     }
     
     @IBAction func editPins(_ sender: UIButton) {switchDeleteMode()}
@@ -141,8 +166,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         case false: deleteMode = true ; animateMessage(show: true)
         }
     }
-    
-    deinit {print("The TravelerViewController has been deinitialized")}
     
 }
 

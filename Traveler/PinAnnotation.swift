@@ -13,8 +13,7 @@ class PinAnnotation: NSObject, MKAnnotation{
     
     var coordinate: CLLocationCoordinate2D
     var uniqueIdentifier: String
-    //May not need the isEmpty property anymore!!!!
-    var isEmpty: Bool = true
+    var isSelectable: Bool = true
     var needsDrop: Bool = true
     
     init(coordinate: CLLocationCoordinate2D, uniqueIdentifier: String){

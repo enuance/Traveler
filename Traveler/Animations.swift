@@ -56,6 +56,8 @@ extension TravelMapViewController{
     }
 }
 
+
+
 extension AlbumViewController{
     
     func moveTrayDown(animated: Bool, completionHandler: (()-> Void)?){
@@ -111,6 +113,7 @@ extension AlbumViewController{
         albumLocationMap.addAnnotation(selectedPin)
     }
     
+    
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         for pinView in views{
             if let pin = pinView.annotation as? PinAnnotation, pin.needsDrop{
@@ -148,6 +151,7 @@ extension AlbumViewController{
         }
     }
     
+    
     func animateFullView(){
         fullView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fullView)
@@ -172,10 +176,6 @@ extension AlbumViewController{
             })
         }
     }
-    
-    
-    
-    
     
     
     func animateRemoveFullView(){

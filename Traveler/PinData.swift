@@ -11,6 +11,9 @@ import CoreData
 
 class PinData{
     
+    
+    static func completedFraming(){}
+    
     static func requestAllPins( _ completion: @escaping (_ pins: [PinAnnotation]?, _ error: DatabaseError?) -> Void){
         DispatchQueue.global(qos: .userInteractive).sync {
             let requestForPins: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -37,27 +40,30 @@ class PinData{
     }
     
     static func requestPinDeletion(_ uniqueID: String, _ completion: @escaping (_ error: DatabaseError?) -> Void ){
+        //Enter into background Serial queue
         DispatchQueue.global(qos: .userInteractive).sync {
             let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
             //Search criteia should bring the one Pin that has the Unique ID
             let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
             requestPinToDelete.predicate = searchCriteria
+            //Fetch the requested Pin
             var pinToDelete: Pin! = nil
             do{pinToDelete = try Traveler.shared.backgroundContext.fetch(requestPinToDelete).first}
-            catch{
-                DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))}
-                return
-            }
+            catch{DispatchQueue.main.async {
+                completion(DatabaseError.general(dbDescription: error.localizedDescription))}
+                return}
+            //Check to see if a Pin was retrieved or not.
             if let aPinToDelete = pinToDelete{
+                //Check if the Pin is still being worked on by another task before conflicting with it
+                if aPinToDelete.hasChanges{
+                    DispatchQueue.main.async {completion(DatabaseError.operationInProgress)};return}
+                //If not other tasks are operating on it then procede with deletion
                 Traveler.shared.backgroundContext.delete(aPinToDelete)
                 print("A Pin with ID \(uniqueID) has been deleted")
                 //Once it's deleted we need to save the context!
                 do{try Traveler.shared.backgroundContext.save()}
-                catch{
-                    DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))}
-                    return
-                }
-            }
+                catch{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))};return}}
+            //Getting to this point means the task has successfully completed.
             DispatchQueue.main.async {completion(nil)}
             return
         }
@@ -84,6 +90,8 @@ class PinData{
             guard error == nil else{completion(error);return}
             //If there are no photos produced in the search then return the no results error.
             guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
+                //Send a deletion call for the pin for the next time the context is saved
+                Traveler.shared.backgroundContext.delete(pin)
                 completion(GeneralError.PhotoSearchYieldedNoResults)
                 return}
             //Start adding the PhotoFrames to the Pin
@@ -95,6 +103,7 @@ class PinData{
                 frameToAdd.uniqueID = frame.photoID
                 pin.addToAlbumFrames(frameToAdd)
             }
+            print("There are \(photoFrameList.count) Frames that need to be saved")
             //Once everything is added, attempt the save and return the completion closure.
             do{try Traveler.shared.backgroundContext.save()}
             catch{completion(DatabaseError.general(dbDescription: error.localizedDescription)); return}
@@ -102,7 +111,10 @@ class PinData{
         }
     }
     
- 
     
     
 }
+
+
+
+

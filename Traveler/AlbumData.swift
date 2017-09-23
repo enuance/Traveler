@@ -12,11 +12,8 @@ import CoreData
 class AlbumData{
     
     let albumPin: Pin
-    var latitude: String{get{return String(albumPin.latitude)}}
-    var longitude: String{get{return String(albumPin.longitude)}}
-    var frameCount: Int{ get{
-        guard let albumFrames = albumPin.albumFrames?.allObjects as? [PhotoFrame] else{return 0}
-        return albumFrames.count}}
+    
+    weak var changesDelegate: AlbumChangeResponder?
     
     init?(pinID: String){
         let searchForPin: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -26,9 +23,14 @@ class AlbumData{
         do{ pinFound  = try Traveler.shared.backgroundContext.fetch(searchForPin).first}
         catch{return nil}
         guard let thePin = pinFound else{return nil}
-        //The Pin must have PhotoFrames from point of initialization, otherwise it's useless!!!
-        guard let albumFrames = thePin.albumFrames?.allObjects as? [PhotoFrame], albumFrames.count != 0 else{return nil}
+        guard (thePin.albumFrames?.allObjects as? [PhotoFrame]) != nil/*, albumFrames.count != 0*/ else{return nil}
         self.albumPin = thePin
+    }
+    
+    func requestAlbumCount(_ completion: @escaping (_ frameCount: Int?, _ error: DatabaseError?) -> Void){
+        guard let albumFrames = albumPin.albumFrames?.allObjects as? [PhotoFrame] else{completion(0, nil); return }
+        completion(albumFrames.count, nil)
+        
     }
     
     //Does the fetch/network call on a background queue and returns a closure onto the main queue
@@ -39,10 +41,14 @@ class AlbumData{
             guard let albumID = self?.albumPin.uniqueID else{return}
             //Set the search criteria for a Photo frame that matches the location ID and the Frame's location within the Album.
             let searchForPhotoFrame: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
-            let searchCriteria = NSPredicate(format: "albumLocation = %@ AND myLocation.uniqueID = %@", Int16(albumLocation), albumID)
-            searchForPhotoFrame.predicate = searchCriteria
+            let location = Int16(albumLocation)
+            let searchCriteriaOne = NSPredicate(format: "albumLocation = %@", NSNumber(value: location))
+            let searchCriteriaTwo = NSPredicate(format: "myLocation.uniqueID = %@", albumID)
+            let compoundCriteria = NSCompoundPredicate(type: NSCompoundPredicate.LogicalType.and, subpredicates: [searchCriteriaOne, searchCriteriaTwo])
+            searchForPhotoFrame.predicate = compoundCriteria
             //Execute the search and check for the resulting entity returned from the Database
             var frameFound: PhotoFrame?
+            //frameFound!.myLocation?.uniqueID
             do{frameFound = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrame).first}
             catch{ DispatchQueue.main.async{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
             //If the frame is not found for the Pin and Album location, then something is wrong and we should return an error.
@@ -96,32 +102,55 @@ class AlbumData{
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
             //Check that this object still exists otherwise ignore the call to the method
-            guard let albumID = self?.albumPin.uniqueID else{return}
+            guard let albumID = self?.albumPin.uniqueID, let thisPin = self?.albumPin else{return}
             //Set the search criteria for Photo frames that are = to or > than the frame's location within the Album and matches the Album ID.
             let searchForPhotoFrames: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
             let searchCriteria = NSPredicate(format: "albumLocation >= %@ AND myLocation.uniqueID = %@", Int16(albumLocation), albumID)
+            //Set the sorting rules for the returned entities
             let sortByLocation = NSSortDescriptor(key: "albumLocation", ascending: true)
             searchForPhotoFrames.predicate = searchCriteria
             searchForPhotoFrames.sortDescriptors = [sortByLocation]
-            
+            //Retrieve the requested PhotoFrames in the order requested
             var framesToUpdate: [PhotoFrame]?
-            
             do{framesToUpdate = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrames)}
             catch{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))};return}
-            
-            //Left off here
-            
-            
+            //Check to see if anything was returned
+            guard var orderedFrames = framesToUpdate
+                else{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: "No PhotoFrame was found to delete"))}; return}
+            //Pull out the PhotoFrame to delete, then remove it from the Album's Frame List in the DataBase
+            let frameToDelete = orderedFrames.removeFirst()
+            print("Frame with \(String(describing: frameToDelete.uniqueID)) is prepared for deletion")
+            thisPin.removeFromAlbumFrames(frameToDelete)
+            //Then update the remaining Frame's locations inside the album by decrementing each of them by one.
+            for frame in orderedFrames{
+                print("Frame # \(String(describing: frame.albumLocation)) is being updated to:")
+                frame.albumLocation -= 1
+                print("# \(String(describing: frame.albumLocation))")
+            }
+            // Save the changes in the database
+            do{try Traveler.shared.backgroundContext.save()}
+            catch{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))}}
+            //Reaching this point means successful completion. Return no error to the main queue
+            DispatchQueue.main.async {completion(nil)}
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
+}
+
+
+//Enter Methods here that you want to communicate to the ViewController instead of using flags
+protocol AlbumChangeResponder: class {
+    func albumDidChangeFrameCount(_ newFrameCount: Int)
     
 }
+
+
+
+
+
+
+
+
+
+
+

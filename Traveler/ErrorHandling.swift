@@ -57,7 +57,7 @@ enum DatabaseError: LocalizedError{
     case nonUniqueEntry
     case associatedValueNotFound
     case inconvertableObject(object: String)
-    
+    case operationInProgress
     
     var localizedDescription: String{
         switch self{
@@ -69,6 +69,8 @@ enum DatabaseError: LocalizedError{
             return "You attempted to retrieve a value not associated with the pin in the DataBase"
         case .inconvertableObject(object: let objectDescription):
             return "Unable to convert DataBase object to: \(objectDescription)"
+        case .operationInProgress:
+            return "Your request could not be completed because another task is currently working on this object"
         }
     }
 }
