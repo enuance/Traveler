@@ -30,17 +30,11 @@ class AlbumViewController: UIViewController {
     
     var trayRemovalFlag = false
     var albumDeletionFlag = false
-    
     var selectedPin: PinAnnotation!
     var albumData: AlbumData!
-    var selectedPhoto: Int!
-    
+    var selectedPhoto: IndexPath!
     
     var fillMode = FillMode.new
-    
-    
-
-    
     
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
@@ -59,7 +53,15 @@ class AlbumViewController: UIViewController {
     
     @IBAction func fullViewBack(_ sender: Any) {animateRemoveFullView()}
     
-    @IBAction func fullViewDelete(_ sender: Any) {}
+    @IBAction func fullViewDelete(_ sender: Any) {
+        albumData.requestDeletePhotoFor(selectedPhoto.row){ [weak self] error in
+            guard error == nil else{print("Error with deletion!!!"); return}
+            guard let selectedPhoto = self?.selectedPhoto else{return}
+            self?.albumCollection.deleteItems(at: [selectedPhoto])
+            self?.fullViewPhoto.image = TravelerCnst.clearPlaceholder
+            self?.animateRemoveFullView()
+        }
+    }
     
     @IBAction func newAlbum(_ sender: UIButton) {}
     
@@ -81,11 +83,17 @@ class AlbumViewController: UIViewController {
         let albumCell = collectionView.dequeueReusableCell(withReuseIdentifier: "AlbumCollectionCell",for: indexPath) as! AlbumCollectionCell
         albumCell.layer.cornerRadius = 5
         loadingStatusFor(albumCell, isLoading: true)
-        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, error in
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
-            guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
-            self?.loadingStatusFor(albumCell, isLoading: false)
-            albumCell.cellThumbnail.image = albumPhoto.thumbnailImage
+            guard let albumPhoto = albumPhoto, let freshLoad = freshLoad else{print("PHOTO is NILLLLLLLL!!!!"); return}
+            if freshLoad{
+                collectionView.reloadItems(at: [indexPath])
+            }else{
+                self?.loadingStatusFor(albumCell, isLoading: false)
+                albumCell.cellThumbnail.image = albumPhoto.thumbnailImage
+            }
+            
+
         }
         return albumCell
     }
@@ -93,12 +101,12 @@ class AlbumViewController: UIViewController {
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        self.selectedPhoto = (indexPath.row)
+        self.selectedPhoto = indexPath
         animateFullView()
         fvSpinner.startAnimating()
-        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, error in
+        albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
-            guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
+            guard let albumPhoto = albumPhoto, let freshLoad = freshLoad else{print("PHOTO is NILLLLLLLL!!!!"); return}
             self?.fvSpinner.stopAnimating()
             self?.fullViewPhoto.image = albumPhoto.fullsizeImage
         }

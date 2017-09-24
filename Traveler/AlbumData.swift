@@ -34,7 +34,7 @@ class AlbumData{
     }
     
     //Does the fetch/network call on a background queue and returns a closure onto the main queue
-    func requestPhotoFor(_ albumLocation: Int, _ completion: @escaping (_ photo: TravelerPhoto?, _ error: LocalizedError?) -> Void){
+    func requestPhotoFor(_ albumLocation: Int, _ completion: @escaping (_ photo: TravelerPhoto?, _ freshLoad: Bool?, _ error: LocalizedError?) -> Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
             //Check that this object still exists otherwise ignore the call to the method
@@ -50,26 +50,26 @@ class AlbumData{
             var frameFound: PhotoFrame?
             //frameFound!.myLocation?.uniqueID
             do{frameFound = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrame).first}
-            catch{ DispatchQueue.main.async{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
+            catch{ DispatchQueue.main.async{completion(nil, nil,DatabaseError.general(dbDescription: error.localizedDescription))}; return}
             //If the frame is not found for the Pin and Album location, then something is wrong and we should return an error.
             guard let frame = frameFound else{ DispatchQueue.main.async {
-                completion(nil, DatabaseError.general(dbDescription: "The Photo is missing from the DataBase"))}; return}
+                completion(nil, nil,DatabaseError.general(dbDescription: "The Photo is missing from the DataBase"))}; return}
             //Otherwise we should see if a photo exists within the Frame and return it if so.
             if let photoFound = frame.myPhoto, let thumbnail = photoFound.thumbnail, let fullSize = photoFound.fullSize{
                 let requestedPhoto = TravelerPhoto(thumbnail: thumbnail, fullsize: fullSize, photoID: frame.uniqueID!)
-                DispatchQueue.main.async {completion(requestedPhoto, nil)}
+                DispatchQueue.main.async {completion(requestedPhoto, false, nil)}
                 return
             }else{
                 //If no Photo exists, then start pulling the info for retrieving the photo on the network
                 guard let thumbnailString = frame.thumbnailURL, let thumbnailURL = URL(string: thumbnailString),
                     let fullSizeString = frame.fullSizeURL, let fullSizeURL = URL(string: fullSizeString) else{
-                        DispatchQueue.main.async {completion(nil, DatabaseError.general(dbDescription: "The URLs are missing from the Database"))}
+                        DispatchQueue.main.async {completion(nil, nil,DatabaseError.general(dbDescription: "The URLs are missing from the Database"))}
                         return}
                 //Make the network call with the Frame's URL info
                 flickrClient.getPhotoFor(thumbnailURL: thumbnailURL, fullSizeURL: fullSizeURL){ networkImage, error in
-                    guard error == nil else{DispatchQueue.main.async {completion(nil, error!)};return}
+                    guard error == nil else{DispatchQueue.main.async {completion(nil, nil, error!)};return}
                     guard let networkImage = networkImage, let networkThumb = networkImage.thumbnail, let networkFullSize = networkImage.fullSize else{
-                        DispatchQueue.main.async {completion(nil, GeneralError.invalidURL)}; return}
+                        DispatchQueue.main.async {completion(nil, nil, GeneralError.invalidURL)}; return}
                     //Start formating the Database Photo entity with the retrieved network data
                     let photoToSave = Photo(context: Traveler.shared.backgroundContext)
                     photoToSave.myFrame = frame
@@ -78,9 +78,9 @@ class AlbumData{
                     frame.myPhoto = photoToSave
                     //Commit the Photo data to the persistent container and return the image to the caller.
                     do{try Traveler.shared.backgroundContext.save()}
-                    catch{DispatchQueue.main.async{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
+                    catch{DispatchQueue.main.async{completion(nil, nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
                     let requestedPhoto = TravelerPhoto(thumbnail: NSData(data: networkThumb), fullsize: NSData(data: networkFullSize), photoID: albumID)
-                    DispatchQueue.main.async {completion(requestedPhoto,  nil)}
+                    DispatchQueue.main.async {completion(requestedPhoto, true, nil)}
                 }
             }
         }
