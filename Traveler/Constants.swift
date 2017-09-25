@@ -267,29 +267,32 @@ enum FillMode{
 
 //For use back and forth between the data base and the app
 class TravelerPhoto{
-    var thumbnailImage: UIImage!
-    var thumbnailData: NSData!
-    var fullsizeImage: UIImage!
-    var fullsizeData: NSData!
+    var thumbnailImage: UIImage
+    var thumbnailData: NSData
+    var fullsizeImage: UIImage
+    var fullsizeData: NSData
     var photoID: String
     
-    init(thumbnail: UIImage, fullsize: UIImage, photoID: String) {
+    init?(thumbnail: UIImage, fullsize: UIImage, photoID: String) {
         self.thumbnailImage = thumbnail
         self.fullsizeImage = fullsize
         self.photoID = photoID
-        self.thumbnailData = NSData(data: UIImagePNGRepresentation(thumbnail)!)
-        self.fullsizeData = NSData(data: UIImageJPEGRepresentation(fullsize, 1.0)!)
+        guard let pngThumbnailData = UIImagePNGRepresentation(thumbnail) else{return nil}
+        guard let jpegFullSizeData = UIImageJPEGRepresentation(fullsize, 1.0) else {return nil}
+        self.thumbnailData = NSData(data: pngThumbnailData)
+        self.fullsizeData = NSData(data: jpegFullSizeData)
     }
     
-    init(thumbnail: NSData, fullsize: NSData, photoID: String){
-        self.thumbnailImage = UIImage(data: thumbnail as Data)!
-        self.fullsizeImage = UIImage(data: fullsize as Data)!
+    init?(thumbnail: NSData, fullsize: NSData, photoID: String){
         self.photoID = photoID
         self.thumbnailData = thumbnail
         self.fullsizeData = fullsize
+        guard let uiThumbnailImage = UIImage(data: thumbnail as Data) else {return nil}
+        guard let uiFullSizeImage = UIImage(data: fullsize as Data) else {return nil}
+        self.thumbnailImage = uiThumbnailImage
+        self.fullsizeImage = uiFullSizeImage
     }
     
-
 }
 
 enum DatabaseStatus{

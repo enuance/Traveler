@@ -86,14 +86,11 @@ class AlbumViewController: UIViewController {
         albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
             guard let albumPhoto = albumPhoto, let freshLoad = freshLoad else{print("PHOTO is NILLLLLLLL!!!!"); return}
-            if freshLoad{
-                collectionView.reloadItems(at: [indexPath])
-            }else{
+            if freshLoad{collectionView.reloadItems(at: [indexPath])}
+            else{
                 self?.loadingStatusFor(albumCell, isLoading: false)
                 albumCell.cellThumbnail.image = albumPhoto.thumbnailImage
             }
-            
-
         }
         return albumCell
     }
@@ -101,12 +98,12 @@ class AlbumViewController: UIViewController {
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        self.selectedPhoto = indexPath
+        selectedPhoto = indexPath
         animateFullView()
         fvSpinner.startAnimating()
         albumData.requestPhotoFor(indexPath.row){ [weak self] albumPhoto, freshLoad, error in
             guard error == nil else{print("Errrrorrr!!!!"); return}
-            guard let albumPhoto = albumPhoto, let freshLoad = freshLoad else{print("PHOTO is NILLLLLLLL!!!!"); return}
+            guard let albumPhoto = albumPhoto else{print("PHOTO is NILLLLLLLL!!!!"); return}
             self?.fvSpinner.stopAnimating()
             self?.fullViewPhoto.image = albumPhoto.fullsizeImage
         }

@@ -30,7 +30,6 @@ class AlbumData{
     func requestAlbumCount(_ completion: @escaping (_ frameCount: Int?, _ error: DatabaseError?) -> Void){
         guard let albumFrames = albumPin.albumFrames?.allObjects as? [PhotoFrame] else{completion(0, nil); return }
         completion(albumFrames.count, nil)
-        
     }
     
     //Does the fetch/network call on a background queue and returns a closure onto the main queue
@@ -48,7 +47,6 @@ class AlbumData{
             searchForPhotoFrame.predicate = compoundCriteria
             //Execute the search and check for the resulting entity returned from the Database
             var frameFound: PhotoFrame?
-            //frameFound!.myLocation?.uniqueID
             do{frameFound = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrame).first}
             catch{ DispatchQueue.main.async{completion(nil, nil,DatabaseError.general(dbDescription: error.localizedDescription))}; return}
             //If the frame is not found for the Pin and Album location, then something is wrong and we should return an error.
