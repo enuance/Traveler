@@ -43,11 +43,19 @@ extension TravelMapViewController{
     }
     
     func goToLocationAlbum(){
-        UIView.animate(withDuration: 0.2, animations:
-            {self.bottomTray.transform = CGAffineTransform(
+        UIView.animate(withDuration: 0.2, animations:{
+            self.bottomTray.transform = CGAffineTransform(
                 translationX: self.bottomTray.frame.origin.x,
-                y: self.bottomTray.frame.height)}, completion:
-            {completed in self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)})
+                y: self.bottomTray.frame.height)}, completion: {completed in
+                    self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)})
+    }
+    
+    func lowerBottomTray(completionHandler: (()-> Void)?){
+        UIView.animate(withDuration: 0.2, animations:{
+            self.bottomTray.transform = CGAffineTransform(
+                translationX: self.bottomTray.frame.origin.x,
+                y: self.bottomTray.frame.height)},
+                       completion: {completed in if let handler = completionHandler{handler()}})
     }
     
     func showBottomTray(){

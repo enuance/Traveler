@@ -19,6 +19,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var bottomTray: UIView!
     
     var deleteMode: Bool = false
+    var viewFirstLoaded = true
     var selectedPin: PinAnnotation!
     
     override func viewDidLoad() {super.viewDidLoad()
@@ -26,14 +27,13 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         setupTouchSenitivity()
     }
 
-    override func viewWillAppear(_ animated: Bool) { super.viewWillAppear(animated)}
-    
     override func viewDidAppear(_ animated: Bool) {super.viewDidAppear(animated)
         addDataBasePins(to: mapView)
         showBottomTray()
     }
-
+    
     override func viewDidDisappear(_ animated: Bool) { super.viewDidDisappear(animated)
+        viewFirstLoaded = false
         mapView.removeAnnotations(mapView.annotations)
     }
     
@@ -75,9 +75,9 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         print("pin \(uniqueID) Selected")
         guard pinAnnotation.isSelectable == true else{
             SendToDisplay.error(self,
-                                errorType: "Pin is not accessible yet",
+                                errorType: "Pin not accessible!",
                                 errorMessage: DatabaseError.operationInProgress.localizedDescription,
-                                assignment: nil)
+                                assignment: {mapView.deselectAnnotation(pinAnnotation, animated: false)})
             return}
         selectedPin = pinAnnotation
         if deleteMode{ PinData.requestPinDeletion(uniqueID){ error in
@@ -85,7 +85,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
                 SendToDisplay.error(self,
                                     errorType: "DataBase Error",
                                     errorMessage: error!.localizedDescription,
-                                    assignment: nil)
+                                    assignment: {mapView.deselectAnnotation(pinAnnotation, animated: false)})
                 return}
             mapView.removeAnnotation(view.annotation!)
             self.switchDeleteMode()}}
@@ -111,18 +111,28 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             to: traveledPlacesView,
             duration: 0.75,
             options: [.transitionCurlUp, .showHideTransitionViews],
-            completion: {transitioned in Traveler.shouldShowIntroMessageIn(self)}
+            completion: {transitioned in
+                if !self.viewFirstLoaded{
+                    self.showBottomTray()
+                    self.addDataBasePins(to: self.mapView)
+                    }
+                Traveler.shouldShowIntroMessageIn(self)}
         )
     }
     
     @IBAction func backToEntry(_ sender: UIButton) {
-                UIView.transition(
-                    from: traveledPlacesView,
-                    to: entryView,
-                    duration: 0.75,
-                    options: [.transitionCurlDown, .showHideTransitionViews],
-                    completion: {transitioned in /*Enter Code if Needed*/}
-        )
+        viewFirstLoaded = false
+        lowerBottomTray(){
+            UIView.transition(
+                from: self.traveledPlacesView,
+                to: self.entryView,
+                duration: 0.75,
+                options: [.transitionCurlDown, .showHideTransitionViews],
+                completion: {transitioned in
+                    let allPins = self.mapView.annotations
+                    self.mapView.removeAnnotations(allPins)
+            })
+        }
     }
     
     func addTravelerPin(gestureRecognizer: UIGestureRecognizer){

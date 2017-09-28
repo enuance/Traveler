@@ -241,6 +241,13 @@ struct TravelerCnst {
         return image!
     }
     
+    //For use with collectionViews
+    static func createIndexPathsFor(section: Int, _ albumLocations:[Int]) -> [IndexPath]{
+        var paths = [IndexPath]()
+        for location in albumLocations{paths.append(IndexPath(row: location, section: section))}
+        return paths
+    }
+    
     //Colors for use in accordance with the App's theme.
     static let color = Color()
     struct Color{

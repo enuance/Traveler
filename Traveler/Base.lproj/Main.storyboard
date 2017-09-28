@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Xat-ii-QKG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Xat-ii-QKG">
     <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="AvenirNextCondensed.ttc">
+            <string>AvenirNextCondensed-DemiBold</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Travel Map View Controller-->
         <scene sceneID="tne-QT-ifu">
@@ -20,7 +25,7 @@
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
-                    <view key="view" clipsSubviews="YES" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                    <view key="view" clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -58,7 +63,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To Delete" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iHc-NH-KKT">
                                                 <rect key="frame" x="294" y="83" width="120" height="21"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="120" id="0x8-YB-aUc"/>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="0x8-YB-aUc"/>
                                                     <constraint firstAttribute="height" constant="21" id="lSQ-dk-aLa"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="AvenirNextCondensed-DemiBold" family="Avenir Next Condensed" pointSize="20"/>
@@ -69,7 +74,7 @@
                                                 <rect key="frame" x="0.0" y="83" width="120" height="21"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="21" id="71R-f3-pOp"/>
-                                                    <constraint firstAttribute="width" constant="120" id="Qjs-tH-Bdm"/>
+                                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="Qjs-tH-Bdm"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="AvenirNextCondensed-DemiBold" family="Avenir Next Condensed" pointSize="20"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -78,10 +83,12 @@
                                         </subviews>
                                         <constraints>
                                             <constraint firstItem="yNN-IA-QSG" firstAttribute="top" secondItem="03D-XX-8td" secondAttribute="top" constant="20" id="02d-Uv-SwK"/>
+                                            <constraint firstItem="iHc-NH-KKT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pdQ-vm-Fs9" secondAttribute="leading" constant="20" symbolic="YES" id="5xR-0Q-zgG"/>
                                             <constraint firstItem="03D-XX-8td" firstAttribute="top" secondItem="hhF-cw-hgF" secondAttribute="centerY" constant="-7" id="7tg-3H-XSq"/>
                                             <constraint firstItem="hhF-cw-hgF" firstAttribute="centerX" secondItem="pdQ-vm-Fs9" secondAttribute="centerX" id="Nsd-zl-NqY"/>
                                             <constraint firstAttribute="height" constant="133" id="PcL-FD-7fM"/>
-                                            <constraint firstItem="yNN-IA-QSG" firstAttribute="leading" secondItem="pdQ-vm-Fs9" secondAttribute="leading" id="QDw-6S-y9G"/>
+                                            <constraint firstItem="yNN-IA-QSG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pdQ-vm-Fs9" secondAttribute="leading" id="QDw-6S-y9G"/>
+                                            <constraint firstAttribute="trailing" secondItem="yNN-IA-QSG" secondAttribute="trailing" constant="294" id="Ya3-XA-gwe"/>
                                             <constraint firstItem="hhF-cw-hgF" firstAttribute="top" secondItem="pdQ-vm-Fs9" secondAttribute="top" id="cGD-QD-SvB"/>
                                             <constraint firstAttribute="trailing" secondItem="iHc-NH-KKT" secondAttribute="trailing" id="cLV-Iy-Uof"/>
                                             <constraint firstItem="03D-XX-8td" firstAttribute="centerX" secondItem="pdQ-vm-Fs9" secondAttribute="centerX" id="oze-si-mLg"/>
@@ -220,7 +227,7 @@
                         <viewControllerLayoutGuide type="top" id="zvn-wg-y0o"/>
                         <viewControllerLayoutGuide type="bottom" id="cU7-Q3-2ow"/>
                     </layoutGuides>
-                    <view key="view" clipsSubviews="YES" contentMode="scaleToFill" id="uPS-r2-Hax">
+                    <view key="view" clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uPS-r2-Hax">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -325,7 +332,6 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="ltN-pb-R0T" secondAttribute="trailing" id="0m8-d8-KKp"/>
-                            <constraint firstItem="LEQ-pn-5lL" firstAttribute="centerY" secondItem="uPS-r2-Hax" secondAttribute="centerY" id="DOA-Bc-B3q"/>
                             <constraint firstItem="ltN-pb-R0T" firstAttribute="leading" secondItem="uPS-r2-Hax" secondAttribute="leading" id="GNZ-59-Prl"/>
                             <constraint firstItem="jgk-Hf-gMw" firstAttribute="leading" secondItem="uPS-r2-Hax" secondAttribute="leading" constant="10" id="KYE-Y5-seG"/>
                             <constraint firstItem="LEQ-pn-5lL" firstAttribute="leading" secondItem="uPS-r2-Hax" secondAttribute="leading" id="N82-gM-bOH"/>
@@ -378,7 +384,7 @@
                         <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="FullView BackGround" translatesAutoresizingMaskIntoConstraints="NO" id="EgA-u6-isf">
                             <rect key="frame" x="20" y="25" width="374" height="656"/>
                         </imageView>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jNP-S3-YL9" userLabel="FullView Photo">
+                        <imageView clipsSubviews="YES" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jNP-S3-YL9" userLabel="FullView Photo">
                             <rect key="frame" x="35" y="40" width="344" height="626"/>
                         </imageView>
                         <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="lQp-A3-pY8" userLabel="FullView Spinner">
@@ -449,7 +455,6 @@
             <objects>
                 <navigationController navigationBarHidden="YES" id="Xat-ii-QKG" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="0To-PC-RxK">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>

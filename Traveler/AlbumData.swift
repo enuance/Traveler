@@ -27,11 +27,14 @@ class AlbumData{
         self.albumPin = thePin
     }
     
-    func requestAlbumCount(_ completion: @escaping (_ frameCount: Int?, _ error: DatabaseError?) -> Void){
-        guard let albumFrames = albumPin.albumFrames?.allObjects as? [PhotoFrame] else{completion(0, nil); return }
-        completion(albumFrames.count, nil)
+    //Returns either the frame Count or if nil, returns Zero
+    func requestCount() -> Int{
+        guard let albumFrames = albumPin.albumFrames else{return 0}
+        return albumFrames.count
     }
     
+    //Possible Error Types for this method include:
+    // - DatabaseError, - GeneralError, - NetworkError
     //Does the fetch/network call on a background queue and returns a closure onto the main queue
     func requestPhotoFor(_ albumLocation: Int, _ completion: @escaping (_ photo: TravelerPhoto?, _ freshLoad: Bool?, _ error: LocalizedError?) -> Void){
         //Enter into the background serial queue for this task
@@ -84,6 +87,8 @@ class AlbumData{
         }
     }
     
+    //Possible Error Types for this method include:
+    // - DatabaseError, - GeneralError, - NetworkError
     func requestRenewAlbum(_ completion: @escaping(_ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
@@ -91,11 +96,27 @@ class AlbumData{
             guard let albumPin = self?.albumPin else{return}
             //Check to see if there are album frames existing and remove all if so.
             if let albumFrames = self?.albumPin.albumFrames{self?.albumPin.removeFromAlbumFrames(albumFrames)}
+            //Save the deletion of the frames and then reframe the pin.
+            do{try Traveler.shared.backgroundContext.save()}
+            catch{DispatchQueue.main.async{completion(DatabaseError.general(dbDescription: error.localizedDescription))}; return}
             //request frames saves upon completion. Add all the frames and save the changes.
             PinData.requestFramesFor(albumPin){ error in DispatchQueue.main.async {completion(error)}}
         }
     }
     
+    //Possible Error Types for this method include:
+    // - DatabaseError, - GeneralError, - NetworkError
+    func requestRefillAlbum(_ completion: @escaping(_ albumLocations: [Int]?, _ error: LocalizedError?)->Void){
+        //Enter into the background serial queue for this task
+        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+            //Check that this object still exists otherwise ignore the call to the method
+            guard let albumPin = self?.albumPin else{return}
+            //request frames saves upon completion. Add all the frames and save the changes.
+            PinData.requestRemainingFramesFor(albumPin){ aLocs, error in DispatchQueue.main.async {completion(aLocs, error)}}
+        }
+    }
+    
+    //Possible Error Types for this method include: - DatabaseError
     func requestDeletePhotoFor(_ albumLocation: Int, completion: @escaping(_ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in

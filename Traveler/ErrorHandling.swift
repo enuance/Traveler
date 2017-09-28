@@ -58,6 +58,7 @@ enum DatabaseError: LocalizedError{
     case associatedValueNotFound
     case inconvertableObject(object: String)
     case operationInProgress
+    case objectReturnedNil(object: String)
     
     var localizedDescription: String{
         switch self{
@@ -71,6 +72,8 @@ enum DatabaseError: LocalizedError{
             return "Unable to convert DataBase object to: \(objectDescription)"
         case .operationInProgress:
             return "Your request could not be completed because another task is currently working on this object"
+        case .objectReturnedNil(object: let objectDescription):
+            return "The \(objectDescription) you have requested is nil"
         }
     }
 }
@@ -80,6 +83,7 @@ enum GeneralError: LocalizedError{
     case invalidURL
     case UIEarlyAccess
     case PhotoSearchYieldedNoResults
+    case AccessingNil
     
     var localizedDescription: String{
         switch self{
@@ -91,6 +95,8 @@ enum GeneralError: LocalizedError{
             return "You have selected the item faster than the data can be updated"
         case .PhotoSearchYieldedNoResults:
             return "Our Search for photos at that location has yielded no results"
+        case .AccessingNil:
+            return "The object you are trying to access is nil"
         }
     }
 }

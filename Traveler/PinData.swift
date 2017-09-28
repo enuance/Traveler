@@ -82,6 +82,10 @@ class PinData{
         }
     }
 
+    
+    // Error Types that are returned by this method are: - NetworkError, -DatabaseError, -GeneralError.
+    //Note that a GeneralError is returned when everything completes properly, but their simply were no
+    //Photos found for the specified location from the network.
     //Sets the Frames for a given Pin entity. Assumes usage off the main thread and returns completion off the main thread.
     static func requestFramesFor(_ pin: Pin, completion: @escaping (_ error: LocalizedError?)->Void){
         //Set up the longitude and latitude and start the network call for the Frames
@@ -111,9 +115,70 @@ class PinData{
         }
     }
     
-    
+    // Error Types that are returned by this method are: - NetworkError, -DatabaseError, -GeneralError.
+    //Note that a GeneralError is returned when everything completes properly, but their simply were no
+    //Photos found for the specified location from the network.
+    static func requestRemainingFramesFor(_ pin: Pin, completion: @escaping (_ newLocations: [Int]?, _ error: LocalizedError?)->Void){
+        //Set up the longitude and latitude and start the network call for the Frames
+        let lat = String(pin.latitude); let lon = String(pin.longitude)
+        //Retrieve the PhotoFrames already associated with the pin.
+        guard let currentFrames = pin.albumFrames?.allObjects as? [PhotoFrame]
+            else{ completion(nil, DatabaseError.objectReturnedNil(object: "Frames"));return}
+        let existingFrameCount = currentFrames.count
+        //Calculate the amount of photo's needed
+        let amountToRetrieve = FlickrCnst.Prefered.PhotosPerPage - existingFrameCount
+        //Build up a exclusion list that contains the existing frames' unique IDs.
+        var exclusionList = [String]()
+        for frame in currentFrames{ guard let frameID = frame.uniqueID
+            else{completion(nil, DatabaseError.objectReturnedNil(object: "Frame's Unique ID"));return}
+            exclusionList.append(frameID)
+        }
+        //Start the network call for the remaining frames
+        flickrClient.photosForLocation(
+        withQuota: amountToRetrieve, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoFrameList, networkError in
+            guard networkError == nil else{completion(nil, networkError);return}
+            //If there are no photos produced in the search then return the no results error.
+            guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
+                completion(nil, GeneralError.PhotoSearchYieldedNoResults)
+                return}
+            var newAlbumLocations = [Int]()
+            //Start adding the PhotoFrames to the Pin
+            for (position, frame) in photoFrameList.enumerated(){
+                let frameToAdd = PhotoFrame(context: Traveler.shared.backgroundContext)
+                let destinedAlbumLocation = position + existingFrameCount
+                print("Insterting New Frame at albumLocation #\(destinedAlbumLocation)")
+                newAlbumLocations.append(destinedAlbumLocation)
+                frameToAdd.albumLocation = Int16(destinedAlbumLocation)
+                frameToAdd.thumbnailURL = frame.thumbnail.absoluteString
+                frameToAdd.fullSizeURL = frame.fullSize.absoluteString
+                frameToAdd.uniqueID = frame.photoID
+                pin.addToAlbumFrames(frameToAdd)
+            }
+            print("There are \(photoFrameList.count) Frames that need to be saved")
+            //Once everything is added, attempt the save and return the completion closure.
+            do{try Traveler.shared.backgroundContext.save()}
+            catch{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription)); return}
+            completion(newAlbumLocations, nil)
+        }
+    }
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
