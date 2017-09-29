@@ -108,6 +108,36 @@ extension AlbumViewController{
         }
     }
     
+    //Use this method to acquire the zoom coordinates while the map is not visable yet (viewDidLoad).
+    func locateZoomTarget() -> CLLocationCoordinate2D{
+        //Save the original region so we can reset back to it
+        let originalRegion = albumLocationMap.region
+        //Zoom down to the selected location for the album
+        let zoomTo = MKCoordinateRegionMakeWithDistance(
+            selectedPin.coordinate,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize)
+        albumLocationMap.setRegion(zoomTo, animated: false)
+        //Use the anchorView in the story board in order to determine a new point over the map
+        var aim = mapAnchoringView.center
+        aim.y -= mapAnchoringView.frame.height/4
+        //Convert the point from the anchorView into a coordinate on the map
+        let newCenter = albumLocationMap.convert(aim, toCoordinateFrom: albumLocationMap)
+        //Set up the region to zoom in with same pin location again but this time adjust the latitude
+        //by the difference in latitude between the original point and the one made by using the anchorView
+        var adjust = MKCoordinateRegionMakeWithDistance(
+            selectedPin.coordinate,
+            TravelerCnst.map.regionSize,
+            TravelerCnst.map.regionSize)
+        adjust.center.latitude -= (newCenter.latitude - selectedPin.coordinate.latitude)
+        //Store the adjusted coordinates
+        let targetedZoomPoint = adjust.center
+        //Set the map back to its original region settings
+        albumLocationMap.setRegion(originalRegion, animated: false)
+        //Return the stored adjusted coordinates
+        return targetedZoomPoint
+    }
+    
     //Use this method to zoom the map on the target location (in viewDidAppear)
     func zoomMapToTarget(){
         //Acquire the zoom target to make the region we'll zoom in on
@@ -180,25 +210,42 @@ extension AlbumViewController{
         }){completed in
             UIView.animate(withDuration: 0.6, animations: {
                 self.fvGrayBackground.alpha = 1
-                self.fullViewPhoto.alpha = 1
+                self.fVTopPhoto.alpha = 1
+                self.fVBottomPhoto.alpha = 1
             })
         }
     }
-    
     
     func animateRemoveFullView(){
         UIView.animate(withDuration: 0.3, animations: {
             self.fvSpinner.stopAnimating()
             self.fvBackButton.alpha = 0
             self.fvDeleteButton.alpha = 0
-            self.fullViewPhoto.alpha = 0
+            self.fVTopPhoto.alpha = 0
+            self.fVBottomPhoto.alpha = 0
             self.fvGrayBackground.alpha = 0
             self.fvBlur.effect = nil
         }, completion: {completion in
-            self.fullViewPhoto.image = nil
+            self.fVTopPhoto.image = nil
+            self.fVBottomPhoto.image = nil
             self.fullView.removeFromSuperview()
         })
     }
+    
+    func transitionFullViewImageTo(_ settingImage: UIImage, duration: TimeInterval){
+        if showingTopView{ fVBottomPhoto.image = settingImage}
+        else{fVTopPhoto.image = settingImage}
+        UIView.transition(
+            from: showingTopView ? fVTopPhoto : fVBottomPhoto,
+            to: showingTopView ? fVBottomPhoto : fVTopPhoto,
+            duration: duration,
+            options: [.showHideTransitionViews, .transitionCrossDissolve],
+            completion: {[weak self] transitioned in
+                guard let showingTop = self?.showingTopView else{return}
+                self?.showingTopView = showingTop ? false : true
+        })
+    }
+    
     
     
 }

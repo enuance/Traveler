@@ -357,8 +357,9 @@
                         <outlet property="albumLocationMap" destination="LEQ-pn-5lL" id="9dE-5a-e3c"/>
                         <outlet property="backButton" destination="gU5-5H-Hgg" id="iZt-Ro-gsC"/>
                         <outlet property="collectionTray" destination="pAy-II-4am" id="EwO-jf-aa1"/>
+                        <outlet property="fVBottomPhoto" destination="unx-FX-g2T" id="gBy-3z-FCY"/>
+                        <outlet property="fVTopPhoto" destination="jNP-S3-YL9" id="yTl-X4-iU7"/>
                         <outlet property="fullView" destination="mV7-9T-WUb" id="7Be-i7-d6T"/>
-                        <outlet property="fullViewPhoto" destination="jNP-S3-YL9" id="Fwu-jq-T6g"/>
                         <outlet property="fvBackButton" destination="5Qu-tz-lWJ" id="bwL-cR-WfS"/>
                         <outlet property="fvBlur" destination="cKM-fs-UtZ" id="Dpf-cN-x0y"/>
                         <outlet property="fvDeleteButton" destination="v5V-ia-y4F" id="HHz-Ni-yZe"/>
@@ -384,7 +385,10 @@
                         <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="FullView BackGround" translatesAutoresizingMaskIntoConstraints="NO" id="EgA-u6-isf">
                             <rect key="frame" x="20" y="25" width="374" height="656"/>
                         </imageView>
-                        <imageView clipsSubviews="YES" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jNP-S3-YL9" userLabel="FullView Photo">
+                        <imageView clipsSubviews="YES" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="unx-FX-g2T" userLabel="FVBottomPhoto">
+                            <rect key="frame" x="35" y="40" width="344" height="626"/>
+                        </imageView>
+                        <imageView clipsSubviews="YES" alpha="0.0" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jNP-S3-YL9" userLabel="FVTopPhoto">
                             <rect key="frame" x="35" y="40" width="344" height="626"/>
                         </imageView>
                         <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="lQp-A3-pY8" userLabel="FullView Spinner">
@@ -422,9 +426,15 @@
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <constraints>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="leading" secondItem="EgA-u6-isf" secondAttribute="leading" constant="15" id="0YH-df-pdB"/>
                         <constraint firstItem="EgA-u6-isf" firstAttribute="leading" secondItem="mV7-9T-WUb" secondAttribute="leading" constant="20" id="4uI-BQ-ri2"/>
                         <constraint firstItem="jNP-S3-YL9" firstAttribute="centerY" secondItem="EgA-u6-isf" secondAttribute="centerY" id="5gi-gS-80g"/>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="trailing" secondItem="EgA-u6-isf" secondAttribute="trailing" constant="-15" id="Ael-zn-8m7"/>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="top" secondItem="EgA-u6-isf" secondAttribute="top" constant="15" id="Bvv-Cq-ful"/>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="centerY" secondItem="EgA-u6-isf" secondAttribute="centerY" id="Bxi-Lo-t3z"/>
                         <constraint firstItem="lQp-A3-pY8" firstAttribute="centerY" secondItem="jNP-S3-YL9" secondAttribute="centerY" id="FPk-Hs-wYW"/>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="centerX" secondItem="EgA-u6-isf" secondAttribute="centerX" id="IqJ-Jh-PQY"/>
+                        <constraint firstItem="unx-FX-g2T" firstAttribute="bottom" secondItem="EgA-u6-isf" secondAttribute="bottom" constant="-15" id="L7O-kH-3tA"/>
                         <constraint firstAttribute="trailing" secondItem="cKM-fs-UtZ" secondAttribute="trailing" id="LBh-zN-BF7"/>
                         <constraint firstItem="cKM-fs-UtZ" firstAttribute="centerX" secondItem="mV7-9T-WUb" secondAttribute="centerX" id="M58-sa-8nr"/>
                         <constraint firstItem="cKM-fs-UtZ" firstAttribute="centerY" secondItem="mV7-9T-WUb" secondAttribute="centerY" id="P6Z-Yr-JNX"/>

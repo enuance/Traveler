@@ -23,7 +23,8 @@ class AlbumViewController: UIViewController {
     @IBOutlet var fullView: UIView!
     @IBOutlet weak var fvBlur: UIVisualEffectView!
     @IBOutlet weak var fvGrayBackground: UIImageView!
-    @IBOutlet weak var fullViewPhoto: UIImageView!
+    @IBOutlet weak var fVTopPhoto: UIImageView!
+    @IBOutlet weak var fVBottomPhoto: UIImageView!
     @IBOutlet weak var fvBackButton: UIButton!
     @IBOutlet weak var fvDeleteButton: UIButton!
     @IBOutlet weak var fvSpinner: UIActivityIndicatorView!
@@ -41,7 +42,9 @@ class AlbumViewController: UIViewController {
         //Check if we're already at the begining of the Album
         let endOfAlbum = albumData.frameCount - 1
         guard selectedPhoto.row < endOfAlbum else{print("Already at the End");return}
-        fullViewPhoto?.image = TravelerCnst.clearPlaceholder
+        
+        transitionFullViewImageTo(TravelerCnst.clearPlaceholder, duration: 0.3)
+        //fullViewPhoto?.image = TravelerCnst.clearPlaceholder
         fvSpinner?.startAnimating()
         selectedPhoto.row += 1
         let newSelectedPhoto = selectedPhoto.row
@@ -57,7 +60,8 @@ class AlbumViewController: UIViewController {
                                     assignment: {self?.animateRemoveFullView()})
                 print("AlbumPhoto is nil");return}
             self?.fvSpinner.stopAnimating()
-            self?.fullViewPhoto.image = albumPhoto.fullsizeImage
+            self?.transitionFullViewImageTo(albumPhoto.fullsizeImage, duration: 0.6)
+            //self?.fullViewPhoto.image = albumPhoto.fullsizeImage
         }
     }
     
@@ -65,7 +69,8 @@ class AlbumViewController: UIViewController {
     func fullViewSwipeRight(){
         //Check if we're already at the begining of the Album
         guard selectedPhoto.row > 0 else{print("Already at the beginning");return}
-        fullViewPhoto?.image = TravelerCnst.clearPlaceholder
+        transitionFullViewImageTo(TravelerCnst.clearPlaceholder, duration: 0.3)
+        //fullViewPhoto?.image = TravelerCnst.clearPlaceholder
         fvSpinner?.startAnimating()
         selectedPhoto.row -= 1
         let newSelectedPhoto = selectedPhoto.row
@@ -81,13 +86,15 @@ class AlbumViewController: UIViewController {
                                     assignment: {self?.animateRemoveFullView()})
                 print("AlbumPhoto is nil");return}
             self?.fvSpinner.stopAnimating()
-            self?.fullViewPhoto.image = albumPhoto.fullsizeImage
+            self?.transitionFullViewImageTo(albumPhoto.fullsizeImage, duration: 0.6)
+            //self?.fullViewPhoto.image = albumPhoto.fullsizeImage
         }
     }
     
     override func viewDidLoad() {super.viewDidLoad()
         fvBlur?.effect = nil
-        fullViewPhoto?.layer.cornerRadius = 5
+        fVTopPhoto?.layer.cornerRadius = 6
+        fVBottomPhoto?.layer.cornerRadius = 6
         TravelerCnst.map.zoomTarget = locateZoomTarget()
         albumLocationMap?.isUserInteractionEnabled = false
         moveTrayDown(animated: false, completionHandler: nil)
@@ -114,7 +121,8 @@ class AlbumViewController: UIViewController {
                                     assignment: {self?.animateRemoveFullView()})
                 return}
             self?.albumCollection.deleteItems(at: [selectedPhoto])
-            self?.fullViewPhoto.image = TravelerCnst.clearPlaceholder
+            self?.fVTopPhoto.image = TravelerCnst.clearPlaceholder
+            self?.fVBottomPhoto.image = TravelerCnst.clearPlaceholder
             self?.updateFillModeAndButton()
             self?.animateRemoveFullView()
         }
@@ -187,9 +195,6 @@ class AlbumViewController: UIViewController {
         return albumCell
     }
     
-
-    
-    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         selectedPhoto = indexPath
         animateFullView()
@@ -198,30 +203,10 @@ class AlbumViewController: UIViewController {
             guard error == nil else{self?.errorHandlerForFullView(error!); return}
             guard let albumPhoto = albumPhoto else{return}
             self?.fvSpinner.stopAnimating()
-            self?.fullViewPhoto.image = albumPhoto.fullsizeImage
+            self?.fVTopPhoto.image = albumPhoto.fullsizeImage
+            self?.fVBottomPhoto.image = albumPhoto.fullsizeImage
         }
     }
-    
-    
-    let topView = UIImageView()
-    let bottomView = UIImageView()
-    
-    func transitionFullViewImageTo(_ settingImage: UIImage, duration: TimeInterval){
-        topView.isUserInteractionEnabled = false
-        bottomView.isUserInteractionEnabled = false
-        if showingTopView{bottomView.image = settingImage}
-        else{topView.image = settingImage}
-        UIView.transition(
-            from: showingTopView ? topView : bottomView,
-            to: showingTopView ? bottomView : topView,
-            duration: duration,
-            options: [.showHideTransitionViews, .transitionCrossDissolve],
-            completion: {[weak self] transitioned in
-                self?.topView.isUserInteractionEnabled = true
-                self?.bottomView.isUserInteractionEnabled = true
-        })
-    }
-    
     
     deinit{print("The AlbumViewController Has been deinitialized!")}
 }
@@ -312,15 +297,24 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
     }
     
     func setGestures(){
-        let swipeRightRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeRight))
-        swipeRightRecognizer.numberOfTouchesRequired = 1
-        swipeRightRecognizer.direction = UISwipeGestureRecognizerDirection.right
-        let swipeLeftRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeLeft))
-        swipeLeftRecognizer.numberOfTouchesRequired = 1
-        swipeLeftRecognizer.direction = UISwipeGestureRecognizerDirection.left
-        fullViewPhoto?.addGestureRecognizer(swipeLeftRecognizer)
-        fullViewPhoto?.addGestureRecognizer(swipeRightRecognizer)
-        fullViewPhoto?.isUserInteractionEnabled = true
+        let swipeRightRecognizerTop = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeRight))
+        swipeRightRecognizerTop.numberOfTouchesRequired = 1
+        swipeRightRecognizerTop.direction = UISwipeGestureRecognizerDirection.right
+        let swipeLeftRecognizerTop = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeLeft))
+        swipeLeftRecognizerTop.numberOfTouchesRequired = 1
+        swipeLeftRecognizerTop.direction = UISwipeGestureRecognizerDirection.left
+        let swipeRightRecognizerBottom = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeRight))
+        swipeRightRecognizerBottom.numberOfTouchesRequired = 1
+        swipeRightRecognizerBottom.direction = UISwipeGestureRecognizerDirection.right
+        let swipeLeftRecognizerBottom = UISwipeGestureRecognizer(target: self, action: #selector(fullViewSwipeLeft))
+        swipeLeftRecognizerBottom.numberOfTouchesRequired = 1
+        swipeLeftRecognizerBottom.direction = UISwipeGestureRecognizerDirection.left
+        fVTopPhoto?.addGestureRecognizer(swipeLeftRecognizerTop)
+        fVTopPhoto?.addGestureRecognizer(swipeRightRecognizerTop)
+        fVTopPhoto?.isUserInteractionEnabled = true
+        fVBottomPhoto?.addGestureRecognizer(swipeLeftRecognizerBottom)
+        fVBottomPhoto?.addGestureRecognizer(swipeRightRecognizerBottom)
+        fVBottomPhoto?.isUserInteractionEnabled = true
     }
     
     func updateFillModeAndButton(){
@@ -342,36 +336,6 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
         pinView?.centerOffset.y = -20
         pinView?.centerOffset.x = 4
         return pinView
-    }
-    
-    //Use this method to acquire the zoom coordinates while the map is not visable yet (viewDidLoad).
-    func locateZoomTarget() -> CLLocationCoordinate2D{
-        //Save the original region so we can reset back to it
-        let originalRegion = albumLocationMap.region
-        //Zoom down to the selected location for the album
-        let zoomTo = MKCoordinateRegionMakeWithDistance(
-            selectedPin.coordinate,
-            TravelerCnst.map.regionSize,
-            TravelerCnst.map.regionSize)
-        albumLocationMap.setRegion(zoomTo, animated: false)
-        //Use the anchorView in the story board in order to determine a new point over the map
-        var aim = mapAnchoringView.center
-        aim.y -= mapAnchoringView.frame.height/4
-        //Convert the point from the anchorView into a coordinate on the map
-        let newCenter = albumLocationMap.convert(aim, toCoordinateFrom: albumLocationMap)
-        //Set up the region to zoom in with same pin location again but this time adjust the latitude
-        //by the difference in latitude between the original point and the one made by using the anchorView
-        var adjust = MKCoordinateRegionMakeWithDistance(
-            selectedPin.coordinate,
-            TravelerCnst.map.regionSize,
-            TravelerCnst.map.regionSize)
-        adjust.center.latitude -= (newCenter.latitude - selectedPin.coordinate.latitude)
-        //Store the adjusted coordinates
-        let targetedZoomPoint = adjust.center
-        //Set the map back to its original region settings
-        albumLocationMap.setRegion(originalRegion, animated: false)
-        //Return the stored adjusted coordinates
-        return targetedZoomPoint
     }
     
 }
