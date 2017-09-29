@@ -301,25 +301,3 @@ class TravelerPhoto{
     }
     
 }
-
-enum DatabaseStatus{
-    case Starting
-    case Uploading(String)
-    case Downloading(String)
-    case Completed(String)
-    case Cancelled(String)
-    
-    case UnsavedChanges
-    case PinNotFound
-    case PhotoNotFound
-    case PhotoAlreadyExists
-    case PhotoSetNotFound
-    case SuccessfullDeletion
-    case SuccessfullSave
-    case SuccessfullRetrieval
-    case TaskFailure
-}
-
-
-
-

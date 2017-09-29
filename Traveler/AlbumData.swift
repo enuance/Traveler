@@ -13,7 +13,10 @@ class AlbumData{
     
     let albumPin: Pin
     
-    weak var changesDelegate: AlbumChangeResponder?
+    var frameCount: Int{
+        guard let albumFrames = albumPin.albumFrames else{return 0}
+        return albumFrames.count
+    }
     
     init?(pinID: String){
         let searchForPin: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -27,15 +30,6 @@ class AlbumData{
         self.albumPin = thePin
     }
     
-    //Returns either the frame Count or if nil, returns Zero
-    func requestCount() -> Int{
-        guard let albumFrames = albumPin.albumFrames else{return 0}
-        return albumFrames.count
-    }
-    
-    //Possible Error Types for this method include:
-    // - DatabaseError, - GeneralError, - NetworkError
-    //Does the fetch/network call on a background queue and returns a closure onto the main queue
     func requestPhotoFor(_ albumLocation: Int, _ completion: @escaping (_ photo: TravelerPhoto?, _ freshLoad: Bool?, _ error: LocalizedError?) -> Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
@@ -87,8 +81,6 @@ class AlbumData{
         }
     }
     
-    //Possible Error Types for this method include:
-    // - DatabaseError, - GeneralError, - NetworkError
     func requestRenewAlbum(_ completion: @escaping(_ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
@@ -100,12 +92,10 @@ class AlbumData{
             do{try Traveler.shared.backgroundContext.save()}
             catch{DispatchQueue.main.async{completion(DatabaseError.general(dbDescription: error.localizedDescription))}; return}
             //request frames saves upon completion. Add all the frames and save the changes.
-            PinData.requestFramesFor(albumPin){ error in DispatchQueue.main.async {completion(error)}}
+            PinData.requestFramesFor(albumPin, false){ error in DispatchQueue.main.async {completion(error)}}
         }
     }
     
-    //Possible Error Types for this method include:
-    // - DatabaseError, - GeneralError, - NetworkError
     func requestRefillAlbum(_ completion: @escaping(_ albumLocations: [Int]?, _ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
@@ -116,8 +106,7 @@ class AlbumData{
         }
     }
     
-    //Possible Error Types for this method include: - DatabaseError
-    func requestDeletePhotoFor(_ albumLocation: Int, completion: @escaping(_ error: LocalizedError?)->Void){
+    func requestDeletePhotoFor(_ albumLocation: Int, completion: @escaping(_ error: DatabaseError?)->Void){
         //Enter into the background serial queue for this task
         DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
             //Check that this object still exists otherwise ignore the call to the method
@@ -158,21 +147,3 @@ class AlbumData{
     }
     
 }
-
-
-//Enter Methods here that you want to communicate to the ViewController instead of using flags
-protocol AlbumChangeResponder: class {
-    func albumDidChangeFrameCount(_ newFrameCount: Int)
-    
-}
-
-
-
-
-
-
-
-
-
-
-

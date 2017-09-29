@@ -11,28 +11,26 @@ import CoreData
 
 class PinData{
     
-    
-    static func completedFraming(){}
-    
     static func requestAllPins( _ completion: @escaping (_ pins: [PinAnnotation]?, _ error: DatabaseError?) -> Void){
         DispatchQueue.global(qos: .userInteractive).sync {
             let requestForPins: NSFetchRequest<Pin> = Pin.fetchRequest()
             do{ let returnedPins = try Traveler.shared.backgroundContext.fetch(requestForPins)
+                //Create an empty list for collecting annotations
                 var returnedAnnotations = [PinAnnotation]()
+                //Start looping through and converting all returned pins into annotations
                 for pin in returnedPins{
                     //Convert the returned Pin into an annotation
                     let possiblePin = TravelerCnst.convertToPinAnnotation(with: pin)
                     //Check for proper conversion to pin annotation
                     guard let verifiedPin = possiblePin.pinAnnotation else{
+                        //Return the error to the main queue
                         DispatchQueue.main.async {completion(nil, DatabaseError.inconvertableObject(object: "PinAnnotation"))}
-                        return
-                    }
-                    returnedAnnotations.append(verifiedPin)
-                }
+                        return} //Start collecting the annotations in a list
+                    returnedAnnotations.append(verifiedPin)}
+                //Return the list of annotations through the completion call in the main queue
                 DispatchQueue.main.async {completion(returnedAnnotations, nil)}
-                return
-            }
-            catch{
+                return}
+            catch{ //Getting here means an error was caught and should be handed to the caller
                 DispatchQueue.main.async {completion(nil, DatabaseError.general(dbDescription: error.localizedDescription))}
                 return
             }
@@ -69,7 +67,6 @@ class PinData{
         }
     }
     
-    //Adds a pin to the DataBase
     static func requestPinSave(_ pin: PinAnnotation, _ completion: @escaping (_ error: LocalizedError?) -> Void){
         DispatchQueue.global(qos: .userInteractive).sync {
             //Create a Pin entity and start setting it's attributes
@@ -78,16 +75,11 @@ class PinData{
             pinToAdd.latitude = pin.coordinate.latitude
             pinToAdd.longitude = pin.coordinate.longitude
             //Load up all the Photo frames for the Pin and return whether or not there was an error
-            requestFramesFor(pinToAdd){ error in DispatchQueue.main.async {completion(error)}}
+            requestFramesFor(pinToAdd, true){ error in DispatchQueue.main.async {completion(error)}}
         }
     }
 
-    
-    // Error Types that are returned by this method are: - NetworkError, -DatabaseError, -GeneralError.
-    //Note that a GeneralError is returned when everything completes properly, but their simply were no
-    //Photos found for the specified location from the network.
-    //Sets the Frames for a given Pin entity. Assumes usage off the main thread and returns completion off the main thread.
-    static func requestFramesFor(_ pin: Pin, completion: @escaping (_ error: LocalizedError?)->Void){
+    static func requestFramesFor(_ pin: Pin, _ deleteIfNoPhotos: Bool, completion: @escaping (_ error: LocalizedError?)->Void){
         //Set up the longitude and latitude and start the network call for the Frames
         let lat = String(pin.latitude); let lon = String(pin.longitude)
         flickrClient.photosForLocation(latitude: lat, longitude: lon){photoFrameList, error in
@@ -95,7 +87,7 @@ class PinData{
             //If there are no photos produced in the search then return the no results error.
             guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
                 //Send a deletion call for the pin for the next time the context is saved
-                Traveler.shared.backgroundContext.delete(pin)
+                if deleteIfNoPhotos{Traveler.shared.backgroundContext.delete(pin)}
                 completion(GeneralError.PhotoSearchYieldedNoResults)
                 return}
             //Start adding the PhotoFrames to the Pin
@@ -105,8 +97,7 @@ class PinData{
                 frameToAdd.thumbnailURL = frame.thumbnail.absoluteString
                 frameToAdd.fullSizeURL = frame.fullSize.absoluteString
                 frameToAdd.uniqueID = frame.photoID
-                pin.addToAlbumFrames(frameToAdd)
-            }
+                pin.addToAlbumFrames(frameToAdd)}
             print("There are \(photoFrameList.count) Frames that need to be saved")
             //Once everything is added, attempt the save and return the completion closure.
             do{try Traveler.shared.backgroundContext.save()}
@@ -115,9 +106,6 @@ class PinData{
         }
     }
     
-    // Error Types that are returned by this method are: - NetworkError, -DatabaseError, -GeneralError.
-    //Note that a GeneralError is returned when everything completes properly, but their simply were no
-    //Photos found for the specified location from the network.
     static func requestRemainingFramesFor(_ pin: Pin, completion: @escaping (_ newLocations: [Int]?, _ error: LocalizedError?)->Void){
         //Set up the longitude and latitude and start the network call for the Frames
         let lat = String(pin.latitude); let lon = String(pin.longitude)
@@ -131,8 +119,7 @@ class PinData{
         var exclusionList = [String]()
         for frame in currentFrames{ guard let frameID = frame.uniqueID
             else{completion(nil, DatabaseError.objectReturnedNil(object: "Frame's Unique ID"));return}
-            exclusionList.append(frameID)
-        }
+            exclusionList.append(frameID)}
         //Start the network call for the remaining frames
         flickrClient.photosForLocation(
         withQuota: amountToRetrieve, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoFrameList, networkError in
@@ -152,8 +139,7 @@ class PinData{
                 frameToAdd.thumbnailURL = frame.thumbnail.absoluteString
                 frameToAdd.fullSizeURL = frame.fullSize.absoluteString
                 frameToAdd.uniqueID = frame.photoID
-                pin.addToAlbumFrames(frameToAdd)
-            }
+                pin.addToAlbumFrames(frameToAdd)}
             print("There are \(photoFrameList.count) Frames that need to be saved")
             //Once everything is added, attempt the save and return the completion closure.
             do{try Traveler.shared.backgroundContext.save()}
@@ -163,23 +149,3 @@ class PinData{
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
