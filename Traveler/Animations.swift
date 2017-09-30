@@ -9,6 +9,11 @@
 import UIKit
 import MapKit
 
+
+//........................................................................................
+//         Section For Animations in the TravelMapVC
+//........................................................................................
+
 extension TravelMapViewController{
     
     //Animates a Pin-Drop for newly made pins or when map opens for first time.
@@ -33,6 +38,7 @@ extension TravelMapViewController{
         }
     }
     
+    //Animates a message for deleting a selected pin
     func animateMessage(show: Bool){
         switch show{
         case true: UIView.animate(withDuration: 0.5, animations:
@@ -42,6 +48,7 @@ extension TravelMapViewController{
         }
     }
     
+    //Animates the TravelMapVC preparing to segue to the AlbumVC
     func goToLocationAlbum(){
         UIView.animate(withDuration: 0.2, animations:{
             self.bottomTray.transform = CGAffineTransform(
@@ -50,6 +57,7 @@ extension TravelMapViewController{
                     self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)})
     }
     
+    //Animates the Bottom Tray being lowered
     func lowerBottomTray(completionHandler: (()-> Void)?){
         UIView.animate(withDuration: 0.2, animations:{
             self.bottomTray.transform = CGAffineTransform(
@@ -58,6 +66,7 @@ extension TravelMapViewController{
                        completion: {completed in if let handler = completionHandler{handler()}})
     }
     
+    //Animates the Bottom Tray being raised
     func showBottomTray(){
         UIView.animate(withDuration: 0.4, animations:
             {self.bottomTray.transform = .identity})
@@ -65,35 +74,33 @@ extension TravelMapViewController{
 }
 
 
+//........................................................................................
+//         Section For Animations in the TravelMapVC
+//........................................................................................
 
 extension AlbumViewController{
     
+    //Animates the AlbumTray being moved down
     func moveTrayDown(animated: Bool, completionHandler: (()-> Void)?){
         let centered = self.collectionTray.frame.origin.x
         let lowered = self.collectionTray.frame.height
-        if animated{
-            UIView.animate( withDuration: 0.5,
-                            animations: {self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)},
-                            completion:{completed in if let handler = completionHandler{handler()}})}
-        else{
-            self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)
+        if animated{ UIView.animate(
+            withDuration: 0.5,
+            animations: {self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)},
+            completion:{completed in if let handler = completionHandler{handler()}})}
+        else{ self.collectionTray.transform = CGAffineTransform(translationX: centered, y: lowered)
             if let handler = completionHandler{handler()}
         }
     }
     
+    //Animates the AlbumTray being moved up
     func moveTrayUp(){
         if trayRemovalFlag{return}
-        UIView.animate(withDuration: 0.5,
-                       animations: {self.collectionTray.transform = .identity},
-                       completion: {completed in if self.trayRemovalFlag{
-                        self.moveTrayDown(animated: true, completionHandler: nil)}})
-    }
-    
-    func animateTrayRefill(_ actionWhileTrayDown: (()->Void)?){
-        moveTrayDown(animated: true, completionHandler: {
-            if let action = actionWhileTrayDown{action()}
-            self.moveTrayUp()
-        })
+        UIView.animate(
+            withDuration: 0.5,
+            animations: {self.collectionTray.transform = .identity},
+            completion: {completed in if self.trayRemovalFlag{
+                self.moveTrayDown(animated: true, completionHandler: nil)}})
     }
     
     //Enables a cell to show that it is in the process of loading.
@@ -108,7 +115,7 @@ extension AlbumViewController{
         }
     }
     
-    //Use this method to acquire the zoom coordinates while the map is not visable yet (viewDidLoad).
+    //Helper method for animating the Zoom of the background Map
     func locateZoomTarget() -> CLLocationCoordinate2D{
         //Save the original region so we can reset back to it
         let originalRegion = albumLocationMap.region
@@ -138,7 +145,7 @@ extension AlbumViewController{
         return targetedZoomPoint
     }
     
-    //Use this method to zoom the map on the target location (in viewDidAppear)
+   //Animates the Zoom of the Background Map
     func zoomMapToTarget(){
         //Acquire the zoom target to make the region we'll zoom in on
         guard let zoomTarget = TravelerCnst.map.zoomTarget else{print("The zoom target was nil");return}
@@ -151,7 +158,7 @@ extension AlbumViewController{
         albumLocationMap.addAnnotation(selectedPin)
     }
     
-    
+    //Animates the Pin Drop for the background map
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         for pinView in views{
             if let pin = pinView.annotation as? PinAnnotation, pin.needsDrop{
@@ -173,23 +180,18 @@ extension AlbumViewController{
         }
     }
     
-    
+    //Animates the changing of the renew/refill button
     func changeButton(refill: Bool){
-        if refill{
-            if fillMode != .refill{
+        if refill{ if fillMode != .refill{
             UIView.animate( withDuration: 0.5, animations:{self.newButton?.setImage(UIImage(named: "World Refill"), for: .normal)})
-            fillMode = .refill
-            }
-        }
-        else{
-            if fillMode != .new{
+            fillMode = .refill}}
+        else{ if fillMode != .new{
             UIView.animate(withDuration: 0.5, animations:{self.newButton?.setImage(UIImage(named: "World New"), for: .normal)})
-            fillMode = .new
-            }
+            fillMode = .new}
         }
     }
     
-    
+    //Animates the pop up of the fullView
     func animateFullView(){
         fullView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(fullView)
@@ -216,6 +218,7 @@ extension AlbumViewController{
         }
     }
     
+    //Animates the removal of the fullView
     func animateRemoveFullView(){
         UIView.animate(withDuration: 0.3, animations: {
             self.fvSpinner.stopAnimating()
@@ -232,6 +235,7 @@ extension AlbumViewController{
         })
     }
     
+    //Animates the cross disolving of the FullView Image
     func transitionFullViewImageTo(_ settingImage: UIImage, duration: TimeInterval){
         if showingTopView{ fVBottomPhoto.image = settingImage}
         else{fVTopPhoto.image = settingImage}
@@ -245,8 +249,6 @@ extension AlbumViewController{
                 self?.showingTopView = showingTop ? false : true
         })
     }
-    
-    
     
 }
 

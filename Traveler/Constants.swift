@@ -119,50 +119,16 @@ struct FlickrCnst {
         if let pageNumber = withPage{methodParameters[FlickrCnst.ParameterKeys.Page] = pageNumber}
         return methodParameters
     }
-    
     private init (){}
 }
 
 struct TravelerCnst {
     
-    static let clearPlaceholder: UIImage = createClearPlaceHolder()
-    
+    //Map Constants
     struct map {
         static let regionSize: CLLocationDistance = 8500
         static var zoomTarget: CLLocationCoordinate2D!
         private init(){}
-    }
-    
-    
-    //Use to remove and update values in Dictionaries that use indexes as keys
-    static func removeAndUpdate<Value>(_ indexedDict : inout [Int : Value], at removalIndex: Int){
-        var position: (lastPoint: Int, nextPoint: Int) = (removalIndex, removalIndex + 1)
-        guard indexedDict[removalIndex] != nil else{return}
-        indexedDict.removeValue(forKey: removalIndex)
-        
-        while position.lastPoint != position.nextPoint {
-            guard let foundValue = indexedDict[position.nextPoint] else{return}
-            indexedDict.removeValue(forKey: position.nextPoint)
-            indexedDict[position.lastPoint] = foundValue
-            position.lastPoint = position.nextPoint
-            position.nextPoint += 1
-        }
-    }
-    
-    //Use to remove and update values in Caches that use indexes as keys
-    static func removeAndUpdate(_ indexedCache: inout NSCache<AnyObject, AnyObject>, at removalIndex: Int){
-        var position: (lastPoint: Int, nextPoint: Int) = (removalIndex, removalIndex + 1)
-        func indexer(_ integer: Int) -> AnyObject{return integer as AnyObject}
-        guard indexedCache.object(forKey: indexer(removalIndex)) != nil else{return}
-        indexedCache.removeObject(forKey: indexer(removalIndex))
-        
-        while position.lastPoint != position.nextPoint{
-            guard let foundObject = indexedCache.object(forKey: indexer(position.nextPoint)) else{return}
-            indexedCache.removeObject(forKey: indexer(position.nextPoint))
-            indexedCache.setObject(foundObject, forKey: indexer(position.lastPoint))
-            position.lastPoint = position.nextPoint
-            position.nextPoint += 1
-        }
     }
     
     //Use this method to create a random page number
@@ -220,12 +186,15 @@ struct TravelerCnst {
         return (wouldBeSwift, nil)
     }
     
+    //For Converting a CoreData entity into an Annotation
     static func convertToPinAnnotation(with DBPin: Pin) -> (pinAnnotation: PinAnnotation?, error: DatabaseError?){
         let coordinates = CLLocationCoordinate2DMake(DBPin.latitude, DBPin.longitude)
         guard let uniqueIdentifier = DBPin.uniqueID else{return (nil, DatabaseError.nonUniqueEntry)}
         let annotatedPin = PinAnnotation(coordinate: coordinates, uniqueIdentifier: uniqueIdentifier)
         return (annotatedPin, nil)
     }
+    
+    static let clearPlaceholder: UIImage = createClearPlaceHolder()
     
     //For use with Collection Cells
     static func createClearPlaceHolder() -> UIImage{

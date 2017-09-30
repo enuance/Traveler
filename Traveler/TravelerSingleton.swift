@@ -12,12 +12,9 @@ import CoreData
 
 class Traveler{
     
-    //Singleton for App!
     private init(){}
     static let shared = Traveler()
-    
     let session = URLSession.shared
-    //For getting background queue DB tasks
     let backgroundContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
     
     static func shouldShowIntroMessageIn(_ viewController: UIViewController){
