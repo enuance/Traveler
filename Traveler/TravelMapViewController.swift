@@ -21,6 +21,7 @@ class TravelMapViewController: UIViewController{
     var deleteMode: Bool = false
     var viewFirstLoaded = true
     var selectedPin: PinAnnotation!
+    var albumDataForSelectedPin: AlbumData!
     
     override func viewDidLoad() {super.viewDidLoad()
         UIApplication.shared.statusBarStyle = .lightContent
@@ -41,10 +42,8 @@ class TravelMapViewController: UIViewController{
         guard let identifier = segue.identifier else{return}
         if identifier == "ShowAlbumViewController"{
             if let AlbumVC = segue.destination as? AlbumViewController{
-                guard let theAlbumData = AlbumData(pinID: selectedPin.uniqueIdentifier)
-                    else{print("Couldnt Initialize AlbumData!!!");return}
                 AlbumVC.selectedPin = selectedPin
-                AlbumVC.albumData = theAlbumData
+                AlbumVC.albumData = albumDataForSelectedPin
             }
         }
     }

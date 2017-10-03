@@ -57,6 +57,9 @@ class AlbumViewController: UIViewController {
     
     @IBAction func back(_ sender: Any) {
         moveTrayDown( animated: true, completionHandler: {
+            //Delete Any Dangling Photos that have escaped from the Cascading Deletion rule on PhotoFrame
+            PinData.requestDeleteNullPhotos()
+            //Pop off the Nav Stack
             self.navigationController?.popViewController(animated: true)})
     }
     
@@ -245,7 +248,7 @@ extension AlbumViewController: UICollectionViewDelegate, UICollectionViewDataSou
     
     //Updates the Mode of the renew/refill button on the album
     func updateFillModeAndButton(){
-        guard let frames = albumData?.albumPin.albumFrames?.count else{return}
+        guard let frames = albumData?.frameCount else{return}
         guard let refillImage = UIImage(named: "World Refill"), let newImage = UIImage(named: "World New") else{return}
         if frames < FlickrCnst.Prefered.PhotosPerPage{
             fillMode = .refill

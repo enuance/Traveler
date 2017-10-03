@@ -11,28 +11,36 @@ import CoreData
 
 class AlbumData{
     
-    let albumPin: Pin
-    
-    var frameCount: Int{
-        guard let albumFrames = albumPin.albumFrames else{return 0}
-        return albumFrames.count
+    private let albumPin: Pin
+    //Only this class is allowed to update this frameCount
+    private(set) var frameCount: Int
+ 
+    //Instantiates with associated Pin and Initial FrameCount that will need to be updated with changes
+    init(pin: Pin, frameCount: Int){
+        self.albumPin = pin
+        self.frameCount = frameCount
     }
     
-    init?(pinID: String){
-        let searchForPin: NSFetchRequest<Pin> = Pin.fetchRequest()
-        let pinSearchCriteria = NSPredicate(format: "uniqueID = %@", pinID)
-        searchForPin.predicate = pinSearchCriteria
-        var pinFound: Pin? = nil
-        do{ pinFound  = try Traveler.shared.backgroundContext.fetch(searchForPin).first}
-        catch{return nil}
-        guard let thePin = pinFound else{return nil}
-        guard (thePin.albumFrames?.allObjects as? [PhotoFrame]) != nil/*, albumFrames.count != 0*/ else{return nil}
-        self.albumPin = thePin
+    func updateFrameCount(){
+        //Enter into the background serial queue for this task
+        Traveler.shared.backgroundContext.performAndWait {[weak self] in
+            //Check that this object still exists otherwise ignore the call to the method
+            guard let albumID = self?.albumPin.uniqueID else{return}
+            //Set the search criteria for a Photo frames that match the Unique ID of this location.
+            let searchForPhotoFrames: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
+            let searchCriteria = NSPredicate(format: "myLocation.uniqueID = %@", albumID)
+            searchForPhotoFrames.predicate = searchCriteria
+            var countOfFrames: Int?
+            //Ask the database to run the query in SQL and bring back the result
+            countOfFrames = try? Traveler.shared.backgroundContext.count(for: searchForPhotoFrames)
+            //Return the resulting number of frames or default to zero if an error has occured
+            self?.frameCount = countOfFrames ?? 0
+        }
     }
     
     func requestPhotoFor(_ albumLocation: Int, _ completion: @escaping (_ photo: TravelerPhoto?, _ freshLoad: Bool?, _ error: LocalizedError?) -> Void){
         //Enter into the background serial queue for this task
-        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+        Traveler.shared.backgroundContext.performAndWait {[weak self] in
             //Check that this object still exists otherwise ignore the call to the method
             guard let albumID = self?.albumPin.uniqueID else{return}
             //Set the search criteria for a Photo frame that matches the location ID and the Frame's location within the Album.
@@ -62,55 +70,84 @@ class AlbumData{
                         return}
                 //Make the network call with the Frame's URL info
                 flickrClient.getPhotoFor(thumbnailURL: thumbnailURL, fullSizeURL: fullSizeURL){ networkImage, error in
-                    guard error == nil else{DispatchQueue.main.async {completion(nil, nil, error!)};return}
-                    guard let networkImage = networkImage, let networkThumb = networkImage.thumbnail, let networkFullSize = networkImage.fullSize else{
-                        DispatchQueue.main.async {completion(nil, nil, GeneralError.invalidURL)}; return}
-                    //Start formating the Database Photo entity with the retrieved network data
-                    let photoToSave = Photo(context: Traveler.shared.backgroundContext)
-                    photoToSave.myFrame = frame
-                    photoToSave.thumbnail = NSData(data: networkThumb)
-                    photoToSave.fullSize = NSData(data: networkFullSize)
-                    frame.myPhoto = photoToSave
-                    //Commit the Photo data to the persistent container and return the image to the caller.
-                    do{try Traveler.shared.backgroundContext.save()}
-                    catch{DispatchQueue.main.async{completion(nil, nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
-                    let requestedPhoto = TravelerPhoto(thumbnail: NSData(data: networkThumb), fullsize: NSData(data: networkFullSize), photoID: albumID)
-                    DispatchQueue.main.async {completion(requestedPhoto, true, nil)}
+                    Traveler.shared.backgroundContext.performAndWait {
+                        guard error == nil else{DispatchQueue.main.async {completion(nil, nil, error!)};return}
+                        guard let networkImage = networkImage, let networkThumb = networkImage.thumbnail, let networkFullSize = networkImage.fullSize else{
+                            DispatchQueue.main.async {completion(nil, nil, GeneralError.invalidURL)}; return}
+                        //Start formating the Database Photo entity with the retrieved network data
+                        let photoToSave = Photo(context: Traveler.shared.backgroundContext)
+                        photoToSave.myFrame = frame
+                        photoToSave.thumbnail = NSData(data: networkThumb)
+                        photoToSave.fullSize = NSData(data: networkFullSize)
+                        frame.myPhoto = photoToSave
+                        //Commit the Photo data to the persistent container and return the image to the caller.
+                        do{try Traveler.shared.backgroundContext.save()}
+                        catch{DispatchQueue.main.async{completion(nil, nil, DatabaseError.general(dbDescription: error.localizedDescription))}; return}
+                        let requestedPhoto = TravelerPhoto(thumbnail: NSData(data: networkThumb), fullsize: NSData(data: networkFullSize), photoID: albumID)
+                        DispatchQueue.main.async {completion(requestedPhoto, true, nil)}
+                    }
                 }
             }
         }
     }
     
+    
     func requestRenewAlbum(_ completion: @escaping(_ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
-        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+        Traveler.shared.backgroundContext.performAndWait {[weak self] in
             //Check that this object still exists otherwise ignore the call to the method
-            guard let albumPin = self?.albumPin else{return}
-            //Check to see if there are album frames existing and remove all if so.
-            if let albumFrames = self?.albumPin.albumFrames{self?.albumPin.removeFromAlbumFrames(albumFrames)}
-            //Save the deletion of the frames and then reframe the pin.
+            guard let albumPin = self?.albumPin, let albumID = albumPin.uniqueID else{return}
+            //Create a Fecth request to pull up all existing PhotoFrames for the Pin
+            let searchForPhotoFrames: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
+            let searchCriteria = NSPredicate(format: "myLocation.uniqueID = %@", albumID)
+            searchForPhotoFrames.predicate = searchCriteria
+            var potentialFramesToDelete: [PhotoFrame]?
+            //Collect all the Frames to delete
+            do{potentialFramesToDelete = try Traveler.shared.backgroundContext.fetch(searchForPhotoFrames)}
+            catch{DispatchQueue.main.async{completion(DatabaseError.general(dbDescription: error.localizedDescription))}; return}
+            if let framesToDelete = potentialFramesToDelete{
+                //Ideally A Batch Delete Request would be implemented here, but cant seem to get the context to merge changes,
+                //Being that there's less than 30 photos, this will work too.
+                for frame in framesToDelete{Traveler.shared.backgroundContext.delete(frame)}}
+            //Save the deletion request in the context.
             do{try Traveler.shared.backgroundContext.save()}
             catch{DispatchQueue.main.async{completion(DatabaseError.general(dbDescription: error.localizedDescription))}; return}
+            //Update the frameCount for PhotoData / Should be Zero at this point
+            self?.updateFrameCount()
             //request frames saves upon completion. Add all the frames and save the changes.
-            PinData.requestFramesFor(albumPin, false){ error in DispatchQueue.main.async {completion(error)}}
+            PinData.requestFramesFor(albumPin, false){ error in
+                Traveler.shared.backgroundContext.performAndWait {[weak self] in
+                    //Update the frameCount for PhotoData / Should be the amount of frames brought back at this point
+                    self?.updateFrameCount()
+                    //Send result through completion onto the main Queue
+                    DispatchQueue.main.async {completion(error)}}}
+            //Delete any Dangling Photos that have escaped the Cascading Delete Rule on PhotoFrame Entity
+            PinData.requestDeleteNullPhotos()
         }
     }
     
     func requestRefillAlbum(_ completion: @escaping(_ albumLocations: [Int]?, _ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task
-        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+        Traveler.shared.backgroundContext.performAndWait {[weak self] in
             //Check that this object still exists otherwise ignore the call to the method
             guard let albumPin = self?.albumPin else{return}
             //request frames saves upon completion. Add all the frames and save the changes.
-            PinData.requestRemainingFramesFor(albumPin){ aLocs, error in DispatchQueue.main.async {completion(aLocs, error)}}
+            PinData.requestRemainingFramesFor(albumPin){ aLocs, error in
+                Traveler.shared.backgroundContext.performAndWait {[weak self] in
+                    //Update the frameCount for PhotoData / Should be the amount of frames brought back plus existing
+                    self?.updateFrameCount()
+                    //Send result through completion onto the main Queue
+                    DispatchQueue.main.async {completion(aLocs, error)}
+                }
+            }
         }
     }
     
     func requestDeletePhotoFor(_ albumLocation: Int, completion: @escaping(_ error: DatabaseError?)->Void){
         //Enter into the background serial queue for this task
-        DispatchQueue.global(qos: .userInteractive).sync { [weak self] in
+        Traveler.shared.backgroundContext.performAndWait {[weak self] in
             //Check that this object still exists otherwise ignore the call to the method
-            guard let albumID = self?.albumPin.uniqueID, let thisPin = self?.albumPin else{return}
+            guard let albumID = self?.albumPin.uniqueID else{return}
             //Set the search criteria for Photo frames that are = to or > than the frame's location within the Album and matches the Album ID.
             let searchForPhotoFrames: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
             let location = NSNumber(value: albumLocation)
@@ -128,10 +165,10 @@ class AlbumData{
             //Check to see if anything was returned
             guard var orderedFrames = framesToUpdate
                 else{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: "No PhotoFrame was found to delete"))}; return}
-            //Pull out the PhotoFrame to delete, then remove it from the Album's Frame List in the DataBase
+            //Pull out the PhotoFrame to delete, then delete it from the DataBase
             let frameToDelete = orderedFrames.removeFirst()
-            print("Frame with \(String(describing: frameToDelete.uniqueID)) is prepared for deletion")
-            thisPin.removeFromAlbumFrames(frameToDelete)
+            print("Frame with \(String(describing: frameToDelete.uniqueID!)) is prepared for deletion")
+            Traveler.shared.backgroundContext.delete(frameToDelete)
             //Then update the remaining Frame's locations inside the album by decrementing each of them by one.
             for frame in orderedFrames{
                 print("Frame # \(String(describing: frame.albumLocation)) is being updated to:")
@@ -141,7 +178,9 @@ class AlbumData{
             // Save the changes in the database
             do{try Traveler.shared.backgroundContext.save()}
             catch{DispatchQueue.main.async {completion(DatabaseError.general(dbDescription: error.localizedDescription))}}
-            //Reaching this point means successful completion. Return no error to the main queue
+            //Reaching this point means the changes were succefully saved. Update the frameCount now.
+            self?.updateFrameCount()
+            //Return the completion onto the main queue
             DispatchQueue.main.async {completion(nil)}
         }
     }

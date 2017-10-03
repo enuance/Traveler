@@ -8,7 +8,7 @@
 
 import UIKit
 import MapKit
-
+import CoreData
 
 //........................................................................................
 //         Section For Animations in the TravelMapVC
@@ -50,11 +50,28 @@ extension TravelMapViewController{
     
     //Animates the TravelMapVC preparing to segue to the AlbumVC
     func goToLocationAlbum(){
-        UIView.animate(withDuration: 0.2, animations:{
-            self.bottomTray.transform = CGAffineTransform(
-                translationX: self.bottomTray.frame.origin.x,
-                y: self.bottomTray.frame.height)}, completion: {completed in
-                    self.performSegue(withIdentifier: "ShowAlbumViewController", sender: self)})
+        guard let selectedPin = selectedPin else{ return}
+        PinData.requestAlbumData(with: selectedPin.uniqueIdentifier){ [weak self] theAlbumData, dbError in
+            guard dbError == nil else{ guard self != nil else{return}
+                SendToDisplay.error(self!, errorType: "Database Error", errorMessage: dbError!.localizedDescription, assignment: nil)
+                return}
+            guard let theAlbumData = theAlbumData else{ guard self != nil else{return}
+                SendToDisplay.error(self!,
+                                    errorType: "Error",
+                                    errorMessage: GeneralError.Unexpected(description:"AlbumData did not initialize properly!").localizedDescription,
+                                    assignment: nil)
+                return}
+            DispatchQueue.main.async {
+                self?.albumDataForSelectedPin = theAlbumData
+                UIView.animate(withDuration: 0.2, animations:{
+                    guard self != nil else{return}
+                    self?.bottomTray.transform = CGAffineTransform(
+                        translationX: self!.bottomTray.frame.origin.x,
+                        y: self!.bottomTray.frame.height)}, completion: {completed in
+                            guard self != nil else{return}
+                            self?.performSegue(withIdentifier: "ShowAlbumViewController", sender: self!)})
+            }
+        }
     }
     
     //Animates the Bottom Tray being lowered

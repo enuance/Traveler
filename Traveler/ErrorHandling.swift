@@ -84,6 +84,7 @@ enum GeneralError: LocalizedError{
     case UIEarlyAccess
     case PhotoSearchYieldedNoResults
     case AccessingNil
+    case Unexpected(description: String)
     
     var localizedDescription: String{
         switch self{
@@ -97,6 +98,8 @@ enum GeneralError: LocalizedError{
             return "Our Search for photos at that location has yielded no results"
         case .AccessingNil:
             return "The object you are trying to access is nil"
+        case .Unexpected(description: let errorDescription):
+            return "An Unexpected error has occured: \(errorDescription)"
         }
     }
 }

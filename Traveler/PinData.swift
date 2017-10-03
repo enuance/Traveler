@@ -11,8 +11,30 @@ import CoreData
 
 class PinData{
     
+    //Caution: This Method Returns it's completion on a Concurrent Queue (Not the Main Queue).
+    //Forcing this method onto the Main Queue will cause unexpected errors, potentially fatal.
+    static func requestAlbumData(with pinID: String, _ completion: @escaping (_ pins: AlbumData?, _ error: DatabaseError?) -> Void){
+        Traveler.shared.backgroundContext.performAndWait {
+            let requestPin: NSFetchRequest<Pin> = Pin.fetchRequest()
+            let requestFrameCount: NSFetchRequest<PhotoFrame> = PhotoFrame.fetchRequest()
+            let pinSearchCriteria = NSPredicate(format: "uniqueID = %@", pinID)
+             let frameSearchCriteria = NSPredicate(format: "myLocation.uniqueID = %@", pinID)
+            requestPin.predicate = pinSearchCriteria
+            requestFrameCount.predicate = frameSearchCriteria
+            var returnedPin: Pin?
+            do{returnedPin = try Traveler.shared.backgroundContext.fetch(requestPin).first}
+            catch{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription));return}
+            guard let verifiedPin = returnedPin else{completion(nil, DatabaseError.objectReturnedNil(object: "Pin"));return}
+            var countOfFrames: Int?
+            countOfFrames = try? Traveler.shared.backgroundContext.count(for: requestFrameCount)
+            let numberOfFrames = countOfFrames ?? 0
+            let albumData = AlbumData(pin: verifiedPin, frameCount: numberOfFrames)
+            completion(albumData, nil)
+        }
+    }
+    
     static func requestAllPins( _ completion: @escaping (_ pins: [PinAnnotation]?, _ error: DatabaseError?) -> Void){
-        DispatchQueue.global(qos: .userInteractive).sync {
+        Traveler.shared.backgroundContext.performAndWait {
             let requestForPins: NSFetchRequest<Pin> = Pin.fetchRequest()
             do{ let returnedPins = try Traveler.shared.backgroundContext.fetch(requestForPins)
                 //Create an empty list for collecting annotations
@@ -39,7 +61,7 @@ class PinData{
     
     static func requestPinDeletion(_ uniqueID: String, _ completion: @escaping (_ error: DatabaseError?) -> Void ){
         //Enter into background Serial queue
-        DispatchQueue.global(qos: .userInteractive).sync {
+       Traveler.shared.backgroundContext.performAndWait {
             let requestPinToDelete: NSFetchRequest<Pin> = Pin.fetchRequest()
             //Search criteia should bring the one Pin that has the Unique ID
             let searchCriteria = NSPredicate(format: "uniqueID = %@", uniqueID)
@@ -68,7 +90,7 @@ class PinData{
     }
     
     static func requestPinSave(_ pin: PinAnnotation, _ completion: @escaping (_ error: LocalizedError?) -> Void){
-        DispatchQueue.global(qos: .userInteractive).sync {
+        Traveler.shared.backgroundContext.performAndWait {
             //Create a Pin entity and start setting it's attributes
             let pinToAdd = Pin(context: Traveler.shared.backgroundContext)
             pinToAdd.uniqueID = pin.uniqueIdentifier
@@ -79,10 +101,13 @@ class PinData{
         }
     }
 
+    //Note: Only use this method on a queue provided by Traveler.shared.backGroundContext.
     static func requestFramesFor(_ pin: Pin, _ deleteIfNoPhotos: Bool, completion: @escaping (_ error: LocalizedError?)->Void){
+        Traveler.shared.backgroundContext.performAndWait {
         //Set up the longitude and latitude and start the network call for the Frames
         let lat = String(pin.latitude); let lon = String(pin.longitude)
         flickrClient.photosForLocation(latitude: lat, longitude: lon){photoFrameList, error in
+            Traveler.shared.backgroundContext.performAndWait {
             guard error == nil else{completion(error);return}
             //If there are no photos produced in the search then return the no results error.
             guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
@@ -103,48 +128,75 @@ class PinData{
             do{try Traveler.shared.backgroundContext.save()}
             catch{completion(DatabaseError.general(dbDescription: error.localizedDescription)); return}
             completion(nil)
+            }
+            }
         }
     }
     
+    //Method for deleting Photos that have escaped the cascading delete rule on PhotoFrame
+    static func requestDeleteNullPhotos(){
+        Traveler.shared.backgroundContext.perform {
+            let requestPhotosToDelete: NSFetchRequest<Photo> = Photo.fetchRequest()
+            //Search for all Photos that are dangling in Disk Space
+            let searchCriteria = NSPredicate(format: "myFrame = NULL")
+            requestPhotosToDelete.predicate = searchCriteria
+            //Create an array for those dangling photos
+            var photosToDelete: [Photo]?
+            do{photosToDelete = try Traveler.shared.backgroundContext.fetch(requestPhotosToDelete)}
+            catch{print("Error in retrieving NULL photos in DataBase");return}
+            guard let foundNullPhotos = photosToDelete else{print("Found No Null Photos");return}
+            print("Found \(foundNullPhotos.count) null photos!")
+            //Send a call to delete all of those photos in the context
+            for photoToDelete in foundNullPhotos{Traveler.shared.backgroundContext.delete(photoToDelete)}
+            //Save the deletion or simply ignore
+            try? Traveler.shared.backgroundContext.save()
+        }
+    }
+    
+    //Note: Only use this method on a queue provided by Traveler.shared.backGroundContext.
     static func requestRemainingFramesFor(_ pin: Pin, completion: @escaping (_ newLocations: [Int]?, _ error: LocalizedError?)->Void){
-        //Set up the longitude and latitude and start the network call for the Frames
-        let lat = String(pin.latitude); let lon = String(pin.longitude)
-        //Retrieve the PhotoFrames already associated with the pin.
-        guard let currentFrames = pin.albumFrames?.allObjects as? [PhotoFrame]
-            else{ completion(nil, DatabaseError.objectReturnedNil(object: "Frames"));return}
-        let existingFrameCount = currentFrames.count
-        //Calculate the amount of photo's needed
-        let amountToRetrieve = FlickrCnst.Prefered.PhotosPerPage - existingFrameCount
-        //Build up a exclusion list that contains the existing frames' unique IDs.
-        var exclusionList = [String]()
-        for frame in currentFrames{ guard let frameID = frame.uniqueID
-            else{completion(nil, DatabaseError.objectReturnedNil(object: "Frame's Unique ID"));return}
-            exclusionList.append(frameID)}
-        //Start the network call for the remaining frames
-        flickrClient.photosForLocation(
-        withQuota: amountToRetrieve, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoFrameList, networkError in
-            guard networkError == nil else{completion(nil, networkError);return}
-            //If there are no photos produced in the search then return the no results error.
-            guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
-                completion(nil, GeneralError.PhotoSearchYieldedNoResults)
-                return}
-            var newAlbumLocations = [Int]()
-            //Start adding the PhotoFrames to the Pin
-            for (position, frame) in photoFrameList.enumerated(){
-                let frameToAdd = PhotoFrame(context: Traveler.shared.backgroundContext)
-                let destinedAlbumLocation = position + existingFrameCount
-                print("Insterting New Frame at albumLocation #\(destinedAlbumLocation)")
-                newAlbumLocations.append(destinedAlbumLocation)
-                frameToAdd.albumLocation = Int16(destinedAlbumLocation)
-                frameToAdd.thumbnailURL = frame.thumbnail.absoluteString
-                frameToAdd.fullSizeURL = frame.fullSize.absoluteString
-                frameToAdd.uniqueID = frame.photoID
-                pin.addToAlbumFrames(frameToAdd)}
-            print("There are \(photoFrameList.count) Frames that need to be saved")
-            //Once everything is added, attempt the save and return the completion closure.
-            do{try Traveler.shared.backgroundContext.save()}
-            catch{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription)); return}
-            completion(newAlbumLocations, nil)
+        Traveler.shared.backgroundContext.performAndWait {
+            //Set up the longitude and latitude and start the network call for the Frames
+            let lat = String(pin.latitude); let lon = String(pin.longitude)
+            //Retrieve the PhotoFrames already associated with the pin.
+            guard let currentFrames = pin.albumFrames?.allObjects as? [PhotoFrame]
+                else{ completion(nil, DatabaseError.objectReturnedNil(object: "Frames"));return}
+            let existingFrameCount = currentFrames.count
+            //Calculate the amount of photo's needed
+            let amountToRetrieve = FlickrCnst.Prefered.PhotosPerPage - existingFrameCount
+            //Build up a exclusion list that contains the existing frames' unique IDs.
+            var exclusionList = [String]()
+            for frame in currentFrames{ guard let frameID = frame.uniqueID
+                else{completion(nil, DatabaseError.objectReturnedNil(object: "Frame's Unique ID"));return}
+                exclusionList.append(frameID)}
+            //Start the network call for the remaining frames
+            flickrClient.photosForLocation(
+            withQuota: amountToRetrieve, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoFrameList, networkError in
+                Traveler.shared.backgroundContext.performAndWait {
+                    guard networkError == nil else{completion(nil, networkError);return}
+                    //If there are no photos produced in the search then return the no results error.
+                    guard let photoFrameList = photoFrameList, photoFrameList.count != 0 else{
+                        completion(nil, GeneralError.PhotoSearchYieldedNoResults)
+                        return}
+                    var newAlbumLocations = [Int]()
+                    //Start adding the PhotoFrames to the Pin
+                    for (position, frame) in photoFrameList.enumerated(){
+                        let frameToAdd = PhotoFrame(context: Traveler.shared.backgroundContext)
+                        let destinedAlbumLocation = position + existingFrameCount
+                        print("Insterting New Frame at albumLocation #\(destinedAlbumLocation)")
+                        newAlbumLocations.append(destinedAlbumLocation)
+                        frameToAdd.albumLocation = Int16(destinedAlbumLocation)
+                        frameToAdd.thumbnailURL = frame.thumbnail.absoluteString
+                        frameToAdd.fullSizeURL = frame.fullSize.absoluteString
+                        frameToAdd.uniqueID = frame.photoID
+                        pin.addToAlbumFrames(frameToAdd)}
+                    print("There are \(photoFrameList.count) Frames that need to be saved")
+                    //Once everything is added, attempt the save and return the completion closure.
+                    do{try Traveler.shared.backgroundContext.save()}
+                    catch{completion(nil, DatabaseError.general(dbDescription: error.localizedDescription)); return}
+                    completion(newAlbumLocations, nil)
+                }
+            }
         }
     }
     
