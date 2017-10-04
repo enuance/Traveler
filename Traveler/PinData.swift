@@ -106,7 +106,7 @@ class PinData{
         Traveler.shared.backgroundContext.performAndWait {
         //Set up the longitude and latitude and start the network call for the Frames
         let lat = String(pin.latitude); let lon = String(pin.longitude)
-        flickrClient.photosForLocation(latitude: lat, longitude: lon){photoFrameList, error in
+        FlickrClient.photosForLocation(latitude: lat, longitude: lon){photoFrameList, error in
             Traveler.shared.backgroundContext.performAndWait {
             guard error == nil else{completion(error);return}
             //If there are no photos produced in the search then return the no results error.
@@ -170,7 +170,7 @@ class PinData{
                 else{completion(nil, DatabaseError.objectReturnedNil(object: "Frame's Unique ID"));return}
                 exclusionList.append(frameID)}
             //Start the network call for the remaining frames
-            flickrClient.photosForLocation(
+            FlickrClient.photosForLocation(
             withQuota: amountToRetrieve, IDExclusionList: exclusionList, latitude: lat, longitude: lon){ photoFrameList, networkError in
                 Traveler.shared.backgroundContext.performAndWait {
                     guard networkError == nil else{completion(nil, networkError);return}

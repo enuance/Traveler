@@ -17,8 +17,6 @@ class Traveler{
     let session = URLSession.shared
     let backgroundContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.newBackgroundContext()
     
-    //let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
     static func shouldShowIntroMessageIn(_ viewController: UIViewController){
         if UserDefaults.standard.bool(forKey: "isFirstAppLaunch"){
             SendToDisplay.error(

@@ -69,7 +69,7 @@ class AlbumData{
                         DispatchQueue.main.async {completion(nil, nil,DatabaseError.general(dbDescription: "The URLs are missing from the Database"))}
                         return}
                 //Make the network call with the Frame's URL info
-                flickrClient.getPhotoFor(thumbnailURL: thumbnailURL, fullSizeURL: fullSizeURL){ networkImage, error in
+                FlickrClient.getPhotoFor(thumbnailURL: thumbnailURL, fullSizeURL: fullSizeURL){ networkImage, error in
                     Traveler.shared.backgroundContext.performAndWait {
                         guard error == nil else{DispatchQueue.main.async {completion(nil, nil, error!)};return}
                         guard let networkImage = networkImage, let networkThumb = networkImage.thumbnail, let networkFullSize = networkImage.fullSize else{
@@ -90,7 +90,6 @@ class AlbumData{
             }
         }
     }
-    
     
     func requestRenewAlbum(_ completion: @escaping(_ error: LocalizedError?)->Void){
         //Enter into the background serial queue for this task

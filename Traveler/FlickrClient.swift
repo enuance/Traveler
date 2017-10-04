@@ -8,7 +8,7 @@
 
 import UIKit
 
-class flickrClient{
+class FlickrClient{
     
     static func infoForPhotosAtLocation(
         latitude: String,
